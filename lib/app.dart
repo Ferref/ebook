@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:ebook/themes/app_theme.dart';
 
 class MyApp extends StatefulWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -34,7 +34,7 @@ class _MyAppState extends State<MyApp> {
       home: Scaffold(
         body: _isLoading
             ? _buildLoadingScreen()
-            : const Center(child: Text("Welcome")),
+            : const Center(child: Text("Udvozlet halando!")),
       ),
     );
   }
