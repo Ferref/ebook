@@ -25,4 +25,55 @@ final ThemeData ebookTheme = ThemeData(
     color: Colors.purple,
     linearTrackColor: Colors.purple[200],
   ),
+  textTheme: TextTheme(
+    titleSmall: GoogleFonts.aboreto(
+      fontSize: 12,
+      color: Colors.white,
+    ),
+    titleMedium: GoogleFonts.aboreto(
+      fontSize: 16,
+      color: Colors.white,
+    ),
+    titleLarge: GoogleFonts.aboreto(
+      fontSize: 20,
+      color: Colors.black,
+    ),
+    labelSmall: GoogleFonts.gildaDisplay(
+      fontSize: 20,
+    ),
+    labelMedium: GoogleFonts.gildaDisplay(
+      fontSize: 26,
+    ),
+    labelLarge: GoogleFonts.gildaDisplay(
+      fontSize: 32,
+    ),
+    bodySmall: GoogleFonts.gildaDisplay(
+      fontSize: 20,
+    ),
+    bodyMedium: GoogleFonts.gildaDisplay(
+      fontSize: 26,
+    ),
+    bodyLarge: GoogleFonts.gildaDisplay(
+      fontSize: 32,
+    ),
+    headlineLarge: GoogleFonts.gildaDisplay(
+      fontSize: 30,
+      color: Colors.white,
+      fontWeight: FontWeight.w500,
+    ),
+    headlineMedium: GoogleFonts.gildaDisplay(
+      fontSize: 30,
+      color: Colors.white,
+      fontWeight: FontWeight.w500,
+    ),
+    headlineSmall: GoogleFonts.gildaDisplay(
+      fontSize: 30,
+      color: Colors.white,
+      fontWeight: FontWeight.w500,
+    ),
+  ),
+  iconTheme: const IconThemeData(color: Colors.purple),
+  buttonTheme: const ButtonThemeData(
+    buttonColor: Colors.purple,
+  ),
 );
