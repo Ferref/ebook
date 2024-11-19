@@ -1,5 +1,4 @@
-# ebook_reader_mobilapp
-
+# DuckBook
 Olvass könyveket telefonon.
 
 # Feature-list:
