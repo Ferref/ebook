@@ -34,7 +34,7 @@ class _MyAppState extends State<MyApp> {
       home: Scaffold(
         body: _isLoading
             ? _buildLoadingScreen()
-            : const Center(child: Text("Udvozlet halando!")),
+            : const Center(child: Text("Welcome boi!")),
       ),
     );
   }
