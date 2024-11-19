@@ -4,6 +4,8 @@ import '../../models/books.dart';
 import 'package:ebook/widgets/currently_reading.dart';
 import 'package:ebook/widgets/last_opened_book.dart';
 import 'package:ebook/widgets/owned_books.dart';
+import 'package:ebook/widgets/owned_books.dart';
+import 'package:ebook/screens/book/book_details_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
