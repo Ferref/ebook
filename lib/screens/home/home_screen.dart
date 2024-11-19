@@ -15,9 +15,12 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final OpenLibraryService _openLibraryService = OpenLibraryService();
   List<Book> _books = [];
+  Book? _lastOpenedBook;
+  List<Book> _currentlyReadingBooks = [];
+  List<Book> _ownedBooks = [];
   bool _isLoading = false;
 
-  void _fetchBooks(String query) async {
+  Future<void> _fetchBooks(String query) async {
     setState(() {
       _isLoading = true;
     });
@@ -26,6 +29,11 @@ class _HomeScreenState extends State<HomeScreen> {
       final books = await _openLibraryService.searchBooks(query);
       setState(() {
         _books = books;
+        if (_books.isNotEmpty) {
+          _lastOpenedBook = _books.first;
+          _currentlyReadingBooks = _books.take(2).toList();
+          _ownedBooks = _books;
+        }
       });
     } catch (e) {
       print('Error fetching books: $e');
@@ -34,6 +42,15 @@ class _HomeScreenState extends State<HomeScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  void _navigateToBookDetails(Book book) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BookDetailsScreen(book: book),
+      ),
+    );
   }
 
   @override
@@ -68,15 +85,13 @@ class _HomeScreenState extends State<HomeScreen> {
               leading: const Icon(Icons.home),
               title: const Text('Home'),
               onTap: () {
-                Navigator.pop(context); // Closes the drawer
+                Navigator.pop(context);
               },
             ),
             ListTile(
               leading: const Icon(Icons.book),
               title: const Text('My Books'),
-              onTap: () {
-                // Navigate to the My Books section
-              },
+              onTap: () {},
             ),
           ],
         ),
@@ -88,10 +103,20 @@ class _HomeScreenState extends State<HomeScreen> {
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const LastOpenedBook(),
-                  const CurrentlyReading(),
-                  const OwnedBooks(),
+                  LastOpenedBook(
+                    lastOpenedBook: _lastOpenedBook,
+                  ),
+                  const SizedBox(height: 20),
+                  CurrentlyReading(
+                    currentlyReadingBooks: _currentlyReadingBooks,
+                  ),
+                  const SizedBox(height: 20),
+                  OwnedBooks(
+                    ownedBooks: _ownedBooks,
+                    onBookTap: _navigateToBookDetails,
+                  ),
                   const SizedBox(height: 20),
                   Text(
                     "Recommended Books",
@@ -113,6 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         title: Text(book.title),
                         subtitle: Text(book.author),
+                        onTap: () => _navigateToBookDetails(book),
                       );
                     },
                   ),
