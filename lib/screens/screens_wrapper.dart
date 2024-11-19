@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:ebook/screens/home/home_screen.dart';
-import 'package:ebook/screens/market/market_screen.dart';
-import 'package:ebook/screens/profile/profile_screen.dart';
+import 'package:ebook/screens/home/home_screen.dart' as home;
+import 'package:ebook/screens/market/market_screen.dart' as market;
+import 'package:ebook/screens/profile/profile_screen.dart' as profile;
 
 class ScreensWrapper extends StatefulWidget {
   const ScreensWrapper({super.key});
@@ -14,9 +14,9 @@ class _ScreensWrapperState extends State<ScreensWrapper> {
   int _currentIndex = 0;
 
   final List<Widget> _pages = [
-    const HomeScreen(),
-    const MarketScreen(),
-    const ProfileScreen(),
+    const home.HomeScreen(),
+    const market.MarketScreen(),
+    const profile.ProfileScreen(),
   ];
 
   @override
@@ -25,7 +25,6 @@ class _ScreensWrapperState extends State<ScreensWrapper> {
       body: _pages[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        showUnselectedLabels: false,
         onTap: (int index) {
           setState(() {
             _currentIndex = index;

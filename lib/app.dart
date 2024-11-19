@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:ebook/themes/app_theme.dart';
+import 'package:ebook/screens/screens_wrapper.dart';
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -29,12 +30,11 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Ebook Reader',
-      theme: ebookTheme, // Ezt el kell kesziteni hozza
+      theme: ebookTheme,
       home: Scaffold(
-        body: _isLoading
-            ? _buildLoadingScreen()
-            : const Center(child: Text("Welcome boi!")),
+        body: _isLoading ? _buildLoadingScreen() : const ScreensWrapper(),
       ),
     );
   }
@@ -42,15 +42,11 @@ class _MyAppState extends State<MyApp> {
   Widget _buildLoadingScreen() {
     return Center(
       child: Image.asset(
-        'assets/walkingduck.gif', // pubspec.yaml
+        'assets/walkingduck.gif',
         fit: BoxFit.contain,
         width: MediaQuery.of(context).size.width,
         height: MediaQuery.of(context).size.height,
       ),
     );
   }
-}
-
-void main() {
-  runApp(const MyApp());
 }

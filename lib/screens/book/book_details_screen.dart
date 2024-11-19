@@ -47,16 +47,15 @@ class BookDetailsScreen extends StatelessWidget {
               style: Theme.of(context).textTheme.bodyLarge,
             ),
             const SizedBox(height: 20),
-            if (book.description != null && book.description!.isNotEmpty)
-              Text(
-                book.description!,
-                style: Theme.of(context).textTheme.bodyMedium,
-              )
-            else
-              const Text(
-                "No description available.",
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
+            Text(
+              "Description:",
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              book.description ?? "No description available.",
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
             const SizedBox(height: 20),
             Row(
               children: [
@@ -65,7 +64,7 @@ class BookDetailsScreen extends StatelessWidget {
                     "Pages: ${book.pageCount}",
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
-                const SizedBox(width: 20),
+                if (book.pageCount != null) const SizedBox(width: 20),
                 if (book.publishDate != null)
                   Text(
                     "Published: ${book.publishDate}",
@@ -74,19 +73,25 @@ class BookDetailsScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 20),
-            Text(
-              "Categories:",
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 8,
-              children: book.categories.map((category) {
-                return Chip(
-                  label: Text(category),
-                );
-              }).toList(),
-            ),
+            if (book.categories.isNotEmpty)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Categories:",
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    children: book.categories.map((category) {
+                      return Chip(
+                        label: Text(category),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
           ],
         ),
       ),
