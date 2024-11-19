@@ -1,0 +1,15 @@
+[
+    {
+      "title": "Example Book 1",
+      "author": "Author 1",
+      "coverUrl": "",
+      "isbn": "1234567890"
+    },
+    {
+      "title": "Example Book 2",
+      "author": "Author 2",
+      "coverUrl": "",
+      "isbn": "0987654321"
+    }
+  ]
+  

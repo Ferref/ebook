@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../api/openlibrary_service.dart';
 import '../../models/books.dart';
-import 'package:lithabit/screens/home/sections/all_purchased_books.dart';
-import 'package:lithabit/widgets/keep_reading_section.dart';
-import 'package:lithabit/widgets/last_opened_book.dart';
+import 'package:ebook/widgets/currently_reading.dart';
+import 'package:ebook/widgets/last_opened_book.dart';
+import 'package:ebook/widgets/owned_books.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -47,8 +47,38 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "Lit Habit",
+          "DuckReader",
           style: Theme.of(context).textTheme.labelLarge,
+        ),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Text(
+                'DuckReader Menu',
+                style: TextStyle(color: Colors.white, fontSize: 24),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.home),
+              title: const Text('Home'),
+              onTap: () {
+                Navigator.pop(context); // Closes the drawer
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.book),
+              title: const Text('My Books'),
+              onTap: () {
+                // Navigate to the My Books section
+              },
+            ),
+          ],
         ),
       ),
       body: _isLoading
@@ -60,12 +90,12 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 children: [
                   const LastOpenedBook(),
-                  const KeepReadingSection(),
-                  const AllPurchasedBooks(),
+                  const CurrentlyReading(),
+                  const OwnedBooks(),
                   const SizedBox(height: 20),
                   Text(
                     "Recommended Books",
-                    style: Theme.of(context).textTheme.headline6,
+                    style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   ListView.builder(
                     shrinkWrap: true,
