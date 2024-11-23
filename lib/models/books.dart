@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
 class Book {
   final String title;
   final String author;
@@ -19,7 +22,6 @@ class Book {
     this.categories = const [],
   });
 
-  // Factory method to create a Book object from a JSON response
   factory Book.fromJson(Map<String, dynamic> json) {
     return Book(
       title: json['title'] ?? 'Unknown Title',
@@ -38,20 +40,49 @@ class Book {
     );
   }
 
-  // Factory method to create a Book object from a file path
-  factory Book.fromFile(String filePath) {
-    final fileType = filePath.split('.').last.toLowerCase(); // File extension
-    final fileName = filePath.split('/').last; // File name
+  static Future<Book> fromFile(String filePath) async {
+    print('Creating Book from file path: $filePath'); // Debug: fájl elérési út
+    final fileType = filePath.split('.').last.toLowerCase();
+    final fileName = filePath.split('/').last;
 
-    return Book(
-      title: fileName.replaceAll('.$fileType', ''), // Remove the extension
+    var book = Book(
+      title: fileName.replaceAll('.$fileType', ''),
       author: 'Unknown Author',
       isbn: 'N/A',
-      coverUrl: 'https://placehold.co/400', // Placeholder image for file books
+      coverUrl: 'https://placehold.co/400',
       description: 'Imported from local file.',
       pageCount: null,
       publishDate: null,
       categories: [],
     );
+
+    if (book.author == 'Unknown Author' || book.title == 'Unknown Title') {
+      print('Fetching metadata for book: ${book.title}');
+      try {
+        final metadata = await _fetchBookMetadata(book.title);
+        book = metadata ?? book;
+      } catch (e) {
+        print('Failed to fetch metadata: $e');
+      }
+    }
+    print(
+        'Book created from file with metadata: ${book.title}, ${book.author}');
+    return book;
+  }
+
+  static Future<Book?> _fetchBookMetadata(String title) async {
+    final url = Uri.parse('https://openlibrary.org/search.json?q=$title');
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final docs = data['docs'] as List?;
+      if (docs != null && docs.isNotEmpty) {
+        return Book.fromJson(docs.first);
+      }
+    } else {
+      print('Failed to fetch book metadata: ${response.statusCode}');
+    }
+    return null;
   }
 }

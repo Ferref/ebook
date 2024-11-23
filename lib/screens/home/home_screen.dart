@@ -1,11 +1,12 @@
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart'; // For kIsWeb
 import 'package:flutter/material.dart';
 import '../../api/openlibrary_service.dart';
 import '../../models/books.dart';
 import 'package:ebook/widgets/currently_reading.dart';
 import 'package:ebook/widgets/last_opened_book.dart';
 import 'package:ebook/widgets/owned_books.dart';
-import 'package:ebook/widgets/book_importer.dart'; // Import the BookImporter widget
-
+import 'package:ebook/widgets/book_importer.dart';
 import 'package:ebook/screens/book/book_details_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -48,12 +49,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _navigateToBookDetails(Book book) {
+    print('Navigating to BookDetailsScreen for: ${book.title}');
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => BookDetailsScreen(book: book),
       ),
-    );
+    ).then((_) {
+      print('Returned from BookDetailsScreen');
+    });
   }
 
   void _openImportBooksDialog() {
@@ -76,13 +80,38 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _handleBookImport(String filePath) {
-    setState(() {
-      _ownedBooks.add(Book.fromFile(filePath));
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Book imported: $filePath')),
+  void _handleBookImport(String filePathOrName, Uint8List? fileBytes) {
+    print(
+        'Import started. File: $filePathOrName, Bytes: ${fileBytes?.length ?? "N/A"}');
+
+    final importedBook = Book(
+      title: filePathOrName.split('/').last.replaceAll('.epub', ''),
+      author: 'Unknown Author',
+      isbn: 'N/A',
+      coverUrl: 'https://placehold.co/400', // Placeholder image
+      description: fileBytes != null
+          ? 'Imported from web platform.'
+          : 'Imported from local storage.',
+      pageCount: null,
+      publishDate: null,
+      categories: [],
     );
+
+    setState(() {
+      _ownedBooks.add(importedBook);
+      print('Book added to ownedBooks list: ${importedBook.title}');
+    });
+
+    Future.microtask(() {
+      print('Navigating to book details for: ${importedBook.title}');
+      _navigateToBookDetails(importedBook);
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Book imported: ${importedBook.title}')),
+      );
+    });
   }
 
   @override
@@ -123,7 +152,10 @@ class _HomeScreenState extends State<HomeScreen> {
             ListTile(
               leading: const Icon(Icons.book),
               title: const Text('My Books'),
-              onTap: () {},
+              onTap: () {
+                Navigator.pop(context);
+                // Add functionality to open My Books screen if needed
+              },
             ),
             ListTile(
               leading: const Icon(Icons.import_contacts),

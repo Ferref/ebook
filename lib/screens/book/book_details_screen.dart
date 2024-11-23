@@ -20,6 +20,7 @@ class BookDetailsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Book Cover
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Image.network(
@@ -37,16 +38,19 @@ class BookDetailsScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
+            // Title
             Text(
               book.title,
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 10),
+            // Author
             Text(
               "By ${book.author}",
               style: Theme.of(context).textTheme.bodyLarge,
             ),
             const SizedBox(height: 20),
+            // Description
             Text(
               "Description:",
               style: Theme.of(context).textTheme.titleMedium,
@@ -57,6 +61,7 @@ class BookDetailsScreen extends StatelessWidget {
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 20),
+            // Additional Info (Pages and Published Date)
             Row(
               children: [
                 if (book.pageCount != null)
@@ -73,6 +78,7 @@ class BookDetailsScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 20),
+            // Categories
             if (book.categories.isNotEmpty)
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
