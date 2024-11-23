@@ -4,6 +4,8 @@ import '../../models/books.dart';
 import 'package:ebook/widgets/currently_reading.dart';
 import 'package:ebook/widgets/last_opened_book.dart';
 import 'package:ebook/widgets/owned_books.dart';
+import 'package:ebook/widgets/book_importer.dart'; // Import the BookImporter widget
+
 import 'package:ebook/screens/book/book_details_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -54,6 +56,35 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _openImportBooksDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Import Books'),
+          content: BookImporter(onBookImported: _handleBookImport),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _handleBookImport(String filePath) {
+    setState(() {
+      _ownedBooks.add(Book.fromFile(filePath));
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Book imported: $filePath')),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -93,6 +124,14 @@ class _HomeScreenState extends State<HomeScreen> {
               leading: const Icon(Icons.book),
               title: const Text('My Books'),
               onTap: () {},
+            ),
+            ListTile(
+              leading: const Icon(Icons.import_contacts),
+              title: const Text('Import Books'),
+              onTap: () {
+                Navigator.pop(context);
+                _openImportBooksDialog();
+              },
             ),
           ],
         ),

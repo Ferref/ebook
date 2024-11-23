@@ -19,6 +19,7 @@ class Book {
     this.categories = const [],
   });
 
+  // Factory method to create a Book object from a JSON response
   factory Book.fromJson(Map<String, dynamic> json) {
     return Book(
       title: json['title'] ?? 'Unknown Title',
@@ -34,6 +35,23 @@ class Book {
       publishDate: json['publish_date'] ?? null,
       categories:
           json['subject'] != null ? List<String>.from(json['subject']) : [],
+    );
+  }
+
+  // Factory method to create a Book object from a file path
+  factory Book.fromFile(String filePath) {
+    final fileType = filePath.split('.').last.toLowerCase(); // File extension
+    final fileName = filePath.split('/').last; // File name
+
+    return Book(
+      title: fileName.replaceAll('.$fileType', ''), // Remove the extension
+      author: 'Unknown Author',
+      isbn: 'N/A',
+      coverUrl: 'https://placehold.co/400', // Placeholder image for file books
+      description: 'Imported from local file.',
+      pageCount: null,
+      publishDate: null,
+      categories: [],
     );
   }
 }
