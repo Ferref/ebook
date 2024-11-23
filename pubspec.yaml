@@ -15,6 +15,7 @@ dependencies:
   flutter_lints: ^5.0.0
   flutter_launcher_icons: ^0.14.1
   http: ^1.2.2
+  file_picker: ^8.1.4
 
 dev_dependencies:
   flutter_test:
@@ -25,6 +26,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/walkingduck.gif
+    - assets/images/readingduck.png
 
 flutter_icons:
   android: true
