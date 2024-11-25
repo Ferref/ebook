@@ -15,7 +15,7 @@ class ScreensWrapper extends StatefulWidget {
 class _ScreensWrapperState extends State<ScreensWrapper> {
   int _currentIndex = 0;
 
-  // Mock data for HomeScreen
+  // Mock data to pass to HomeScreen
   final Book? _lastOpenedBook = Book(
     title: "Example Book",
     author: "Author Name",
@@ -55,7 +55,7 @@ class _ScreensWrapperState extends State<ScreensWrapper> {
   @override
   void initState() {
     super.initState();
-    // Initialize the pages with required data
+    // Initialize the pages with data
     _pages = [
       HomeScreen(
         lastOpenedBook: _lastOpenedBook,
@@ -84,8 +84,10 @@ class _ScreensWrapperState extends State<ScreensWrapper> {
           children: [
             const DrawerHeader(
               decoration: BoxDecoration(color: Colors.blue),
-              child: Text('DuckReader Menu',
-                  style: TextStyle(color: Colors.white, fontSize: 24)),
+              child: Text(
+                'DuckReader Menu',
+                style: TextStyle(color: Colors.white, fontSize: 24),
+              ),
             ),
             ListTile(
               leading: const Icon(Icons.home),

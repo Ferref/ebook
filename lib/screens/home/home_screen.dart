@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../models/books.dart';
+import '../book/my_books_screen.dart'; // Import MyBooksScreen
+import '../book/book_import_screen.dart'; // Import BookImportScreen
+import '../market/market_screen.dart'; // Import MarketScreen
 import 'package:ebook/widgets/currently_reading.dart';
 import 'package:ebook/widgets/last_opened_book.dart';
 
@@ -14,14 +17,34 @@ class HomeScreen extends StatelessWidget {
   });
 
   void _openMyBooksScreen(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Navigate to My Books screen')),
+    Navigator.pop(context); // Close the drawer
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            const MyBooksScreen(), // Navigate to MyBooksScreen
+      ),
     );
   }
 
   void _openImportBooksScreen(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Navigate to Import Books screen')),
+    Navigator.pop(context); // Close the drawer
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            const BookImportScreen(), // Navigate to BookImportScreen
+      ),
+    );
+  }
+
+  void _openMarketScreen(BuildContext context) {
+    Navigator.pop(context); // Close the drawer
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const MarketScreen(), // Navigate to MarketScreen
+      ),
     );
   }
 
@@ -50,18 +73,24 @@ class HomeScreen extends StatelessWidget {
               leading: const Icon(Icons.home),
               title: const Text('Home'),
               onTap: () {
-                Navigator.pop(context);
+                Navigator.pop(context); // Close the drawer and stay on Home
               },
+            ),
+            ListTile(
+              leading: const Icon(Icons.store),
+              title: const Text('Market'),
+              onTap: () => _openMarketScreen(context), // Open Market Screen
             ),
             ListTile(
               leading: const Icon(Icons.book),
               title: const Text('My Books'),
-              onTap: () => _openMyBooksScreen(context),
+              onTap: () => _openMyBooksScreen(context), // Open My Books Screen
             ),
             ListTile(
               leading: const Icon(Icons.import_contacts),
               title: const Text('Import Books'),
-              onTap: () => _openImportBooksScreen(context),
+              onTap: () =>
+                  _openImportBooksScreen(context), // Open Import Books Screen
             ),
           ],
         ),
