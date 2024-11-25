@@ -33,9 +33,7 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       title: 'Ebook Reader',
       theme: ebookTheme,
-      home: Scaffold(
-        body: _isLoading ? _buildLoadingScreen() : const ScreensWrapper(),
-      ),
+      home: _isLoading ? _buildLoadingScreen() : const ScreensWrapper(),
     );
   }
 
