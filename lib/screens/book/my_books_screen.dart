@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/books.dart';
+import './reader_screen.dart';
 
 class MyBooksScreen extends StatelessWidget {
   final List<Book> ownedBooks;
@@ -10,6 +11,15 @@ class MyBooksScreen extends StatelessWidget {
     required this.ownedBooks,
     required this.onBookTap,
   });
+
+  void _openReaderScreen(BuildContext context, Book book) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ReaderScreen(book: book),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +34,7 @@ class MyBooksScreen extends StatelessWidget {
                 return ListTile(
                   title: Text(book.title),
                   subtitle: Text(book.author),
-                  onTap: () => onBookTap(book),
+                  onTap: () => _openReaderScreen(context, book),
                 );
               },
             ),

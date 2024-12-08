@@ -1,71 +1,94 @@
+import 'dart:io' show File;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:epubx/epubx.dart';
 import '../../models/books.dart';
 
 class ReaderScreen extends StatefulWidget {
   final Book book;
-  final int? lastReadPage;
 
-  const ReaderScreen({super.key, required this.book, this.lastReadPage});
+  const ReaderScreen({super.key, required this.book});
 
   @override
-  _ReaderScreenState createState() => _ReaderScreenState();
+  State<ReaderScreen> createState() => _ReaderScreenState();
 }
 
 class _ReaderScreenState extends State<ReaderScreen> {
-  int currentPage = 0;
+  EpubBookRef? _epubBookRef;
+  bool _isLoading = true;
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-    currentPage = widget.lastReadPage ?? 0; // Start at last read page or page 0
+    _loadBook();
   }
 
-  void _goToNextPage() {
-    setState(() {
-      currentPage++;
-    });
-  }
+  Future<void> _loadBook() async {
+    if (kIsWeb) {
+      // Handle unsupported operation for the web
+      setState(() {
+        _errorMessage =
+            "EPUB reading is not supported on the web. Please use the app on a mobile device.";
+        _isLoading = false;
+      });
+      return;
+    }
 
-  void _goToPreviousPage() {
-    setState(() {
-      currentPage = (currentPage > 0) ? currentPage - 1 : 0;
-    });
-  }
+    try {
+      // Attempt to load the EPUB file for native platforms
+      final fileBytes = File(widget.book.coverUrl).readAsBytesSync();
+      final epubBook = await EpubReader.openBook(fileBytes);
 
-  @override
-  void dispose() {
-    Navigator.pop(context, currentPage); // Pass back the current page
-    super.dispose();
+      setState(() {
+        _epubBookRef = epubBook;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = "Failed to load the book: $e";
+        _isLoading = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(widget.book.title),
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(widget.book.title),
+        ),
+        body: Center(
+          child: Text(
+            _errorMessage!,
+            style: const TextStyle(fontSize: 16, color: Colors.red),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+
+    // When book is loaded successfully
     return Scaffold(
-      appBar: AppBar(title: Text(widget.book.title)),
-      body: Column(
-        children: [
-          Expanded(
-            child: Center(
-              child: Text(
-                'Reading page: $currentPage',
-                style: Theme.of(context).textTheme.headline4,
-              ),
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              ElevatedButton(
-                onPressed: _goToPreviousPage,
-                child: const Text('Previous Page'),
-              ),
-              ElevatedButton(
-                onPressed: _goToNextPage,
-                child: const Text('Next Page'),
-              ),
-            ],
-          ),
-        ],
+      appBar: AppBar(
+        title: Text(widget.book.title),
+      ),
+      body: Center(
+        child: Text(
+          "Book '${widget.book.title}' loaded successfully!",
+          style: const TextStyle(fontSize: 18),
+          textAlign: TextAlign.center,
+        ),
       ),
     );
   }

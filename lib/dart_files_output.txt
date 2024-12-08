@@ -648,6 +648,7 @@ class _BookImportScreenState extends State<BookImportScreen> {
 my_books_screen.dart
 import 'package:flutter/material.dart';
 import '../../models/books.dart';
+import './reader_screen.dart';
 
 class MyBooksScreen extends StatelessWidget {
   final List<Book> ownedBooks;
@@ -658,6 +659,15 @@ class MyBooksScreen extends StatelessWidget {
     required this.ownedBooks,
     required this.onBookTap,
   });
+
+  void _openReaderScreen(BuildContext context, Book book) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ReaderScreen(book: book),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -672,7 +682,7 @@ class MyBooksScreen extends StatelessWidget {
                 return ListTile(
                   title: Text(book.title),
                   subtitle: Text(book.author),
-                  onTap: () => onBookTap(book),
+                  onTap: () => _openReaderScreen(context, book),
                 );
               },
             ),
@@ -681,74 +691,85 @@ class MyBooksScreen extends StatelessWidget {
 }
 
 reader_screen.dart
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:epubx/epubx.dart';
 import '../../models/books.dart';
 
 class ReaderScreen extends StatefulWidget {
   final Book book;
-  final int? lastReadPage;
 
-  const ReaderScreen({super.key, required this.book, this.lastReadPage});
+  const ReaderScreen({super.key, required this.book});
 
   @override
   _ReaderScreenState createState() => _ReaderScreenState();
 }
 
 class _ReaderScreenState extends State<ReaderScreen> {
-  int currentPage = 0;
+  EpubBookRef? _epubBookRef; // Make this nullable
+  bool _isLoading = true; // Add loading state
+  String? _errorMessage; // Add error message state
 
   @override
   void initState() {
     super.initState();
-    currentPage = widget.lastReadPage ?? 0; // Start at last read page or page 0
+    _loadEpubBook();
   }
 
-  void _goToNextPage() {
-    setState(() {
-      currentPage++;
-    });
-  }
-
-  void _goToPreviousPage() {
-    setState(() {
-      currentPage = (currentPage > 0) ? currentPage - 1 : 0;
-    });
-  }
-
-  @override
-  void dispose() {
-    Navigator.pop(context, currentPage); // Pass back the current page
-    super.dispose();
+  Future<void> _loadEpubBook() async {
+    try {
+      // Simulate loading EPUB content
+      final bytes = File(widget.book.coverUrl).readAsBytesSync();
+      final epubBookRef = await EpubReader.openBook(bytes);
+      setState(() {
+        _epubBookRef = epubBookRef;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = "Failed to load the book: $e";
+        _isLoading = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(widget.book.title),
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(widget.book.title),
+        ),
+        body: Center(
+          child: Text(
+            _errorMessage!,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ),
+      );
+    }
+
+    // When book is loaded successfully
     return Scaffold(
-      appBar: AppBar(title: Text(widget.book.title)),
-      body: Column(
-        children: [
-          Expanded(
-            child: Center(
-              child: Text(
-                'Reading page: $currentPage',
-                style: Theme.of(context).textTheme.headline4,
-              ),
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              ElevatedButton(
-                onPressed: _goToPreviousPage,
-                child: const Text('Previous Page'),
-              ),
-              ElevatedButton(
-                onPressed: _goToNextPage,
-                child: const Text('Next Page'),
-              ),
-            ],
-          ),
-        ],
+      appBar: AppBar(
+        title: Text(widget.book.title),
+      ),
+      body: Center(
+        child: Text(
+          "Epub Book Loaded Successfully!",
+          style: Theme.of(context).textTheme.headlineMedium,
+        ),
       ),
     );
   }
@@ -760,6 +781,7 @@ import '../../models/books.dart';
 import '../book/my_books_screen.dart';
 import '../book/book_import_screen.dart';
 import '../market/market_screen.dart';
+import '../book/reader_screen.dart';
 import 'package:ebook/widgets/last_opened_book.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -774,13 +796,22 @@ class HomeScreen extends StatelessWidget {
     required this.onBookAdded,
   });
 
+  void _openReaderScreen(BuildContext context, Book book) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ReaderScreen(book: book),
+      ),
+    );
+  }
+
   void _openMyBooksScreen(BuildContext context) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => MyBooksScreen(
           ownedBooks: ownedBooks,
-          onBookTap: (book) => onBookAdded(book),
+          onBookTap: (book) => _openReaderScreen(context, book), // Corrected
         ),
       ),
     );
@@ -860,12 +891,17 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Display the last opened book
             LastOpenedBook(lastOpenedBook: lastOpenedBook),
             const SizedBox(height: 20),
+
+            // Button to navigate to My Books
             ElevatedButton(
               onPressed: () => _openMyBooksScreen(context),
               child: const Text("Go to My Books"),
             ),
+
+            // Button to navigate to Import Books
             ElevatedButton(
               onPressed: () => _openImportBooksScreen(context),
               child: const Text("Import a Book"),
@@ -1207,11 +1243,21 @@ class CurrentlyReading extends StatelessWidget {
 last_opened_book.dart
 import 'package:flutter/material.dart';
 import '../../models/books.dart';
+import '../../screens/book/reader_screen.dart';
 
 class LastOpenedBook extends StatelessWidget {
   final Book? lastOpenedBook;
 
   const LastOpenedBook({super.key, required this.lastOpenedBook});
+
+  void _openReaderScreen(BuildContext context, Book book) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ReaderScreen(book: book),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1228,64 +1274,68 @@ class LastOpenedBook extends StatelessWidget {
                 "No book has been opened recently.",
                 style: TextStyle(fontSize: 16, color: Colors.grey),
               )
-            : Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  color: Colors.grey.shade200,
-                ),
-                padding: const EdgeInsets.all(12),
-                child: Row(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
-                        lastOpenedBook!.coverUrl,
-                        width: 100,
-                        height: 140,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            width: 100,
-                            height: 140,
-                            color: Colors.grey,
-                            child: const Icon(Icons.broken_image),
-                          );
-                        },
+            : GestureDetector(
+                onTap: () => _openReaderScreen(context, lastOpenedBook!),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: Colors.grey.shade200,
+                  ),
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          lastOpenedBook!.coverUrl,
+                          width: 100,
+                          height: 140,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              width: 100,
+                              height: 140,
+                              color: Colors.grey,
+                              child: const Icon(Icons.broken_image),
+                            );
+                          },
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            lastOpenedBook!.title,
-                            style: Theme.of(context).textTheme.titleMedium,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            "By ${lastOpenedBook!.author}",
-                            style: Theme.of(context).textTheme.bodyMedium,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 16),
-                          TextButton(
-                            onPressed: () {},
-                            style: TextButton.styleFrom(
-                              backgroundColor: Colors.blue,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 8),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              lastOpenedBook!.title,
+                              style: Theme.of(context).textTheme.titleMedium,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            child: const Text("Continue Reading"),
-                          ),
-                        ],
+                            const SizedBox(height: 8),
+                            Text(
+                              "By ${lastOpenedBook!.author}",
+                              style: Theme.of(context).textTheme.bodyMedium,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 16),
+                            TextButton(
+                              onPressed: () =>
+                                  _openReaderScreen(context, lastOpenedBook!),
+                              style: TextButton.styleFrom(
+                                backgroundColor: Colors.blue,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 8),
+                              ),
+                              child: const Text("Continue Reading"),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
       ],

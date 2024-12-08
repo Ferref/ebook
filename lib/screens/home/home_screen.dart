@@ -3,6 +3,7 @@ import '../../models/books.dart';
 import '../book/my_books_screen.dart';
 import '../book/book_import_screen.dart';
 import '../market/market_screen.dart';
+import '../book/reader_screen.dart';
 import 'package:ebook/widgets/last_opened_book.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -17,13 +18,22 @@ class HomeScreen extends StatelessWidget {
     required this.onBookAdded,
   });
 
+  void _openReaderScreen(BuildContext context, Book book) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ReaderScreen(book: book),
+      ),
+    );
+  }
+
   void _openMyBooksScreen(BuildContext context) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => MyBooksScreen(
           ownedBooks: ownedBooks,
-          onBookTap: (book) => onBookAdded(book),
+          onBookTap: (book) => _openReaderScreen(context, book), // Corrected
         ),
       ),
     );
@@ -103,12 +113,17 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Display the last opened book
             LastOpenedBook(lastOpenedBook: lastOpenedBook),
             const SizedBox(height: 20),
+
+            // Button to navigate to My Books
             ElevatedButton(
               onPressed: () => _openMyBooksScreen(context),
               child: const Text("Go to My Books"),
             ),
+
+            // Button to navigate to Import Books
             ElevatedButton(
               onPressed: () => _openImportBooksScreen(context),
               child: const Text("Import a Book"),
