@@ -5,7 +5,9 @@ import 'package:file_picker/file_picker.dart';
 import '../../models/books.dart';
 
 class BookImportScreen extends StatefulWidget {
-  const BookImportScreen({super.key});
+  final Function(Book) onBookImported;
+
+  const BookImportScreen({super.key, required this.onBookImported});
 
   @override
   _BookImportScreenState createState() => _BookImportScreenState();
@@ -46,6 +48,8 @@ class _BookImportScreenState extends State<BookImportScreen> {
           lastImportedBook = book;
         });
 
+        widget.onBookImported(book);
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Book imported: ${book.title}')),
         );
@@ -69,9 +73,8 @@ class _BookImportScreenState extends State<BookImportScreen> {
       String filePathOrName, Uint8List? fileBytes) async {
     String title = 'Unknown Title';
     String author = 'Unknown Author';
-    String coverUrl = 'https://placehold.co/400'; // Default placeholder
+    String coverUrl = 'https://placehold.co/400';
 
-    // Basic logic to extract title and author from the filename
     if (filePathOrName.contains('-')) {
       final parts = filePathOrName.split('-');
       if (parts.length >= 2) {
@@ -82,8 +85,6 @@ class _BookImportScreenState extends State<BookImportScreen> {
       title = filePathOrName.split('.').first.trim();
     }
 
-    // For real metadata extraction, process the fileBytes based on the format (.epub, .pdf, etc.)
-    // Placeholder logic for now
     return Book(
       title: title,
       author: author,

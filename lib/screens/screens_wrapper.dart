@@ -15,56 +15,46 @@ class ScreensWrapper extends StatefulWidget {
 class _ScreensWrapperState extends State<ScreensWrapper> {
   int _currentIndex = 0;
 
-  // Mock data to pass to HomeScreen
-  final Book? _lastOpenedBook = Book(
-    title: "Example Book",
-    author: "Author Name",
-    isbn: "123456789",
-    coverUrl: "https://placehold.co/400",
-    description: "This is a description of the last opened book.",
-    pageCount: 200,
-    publishDate: "2023",
-    categories: ["Fiction", "Drama"],
-  );
-
-  final List<Book> _currentlyReadingBooks = [
-    Book(
-      title: "Currently Reading 1",
-      author: "Author A",
-      isbn: "123456789",
-      coverUrl: "https://placehold.co/400",
-      description: "This is a description of a currently reading book.",
-      pageCount: 300,
-      publishDate: "2022",
-      categories: ["Adventure"],
-    ),
-    Book(
-      title: "Currently Reading 2",
-      author: "Author B",
-      isbn: "987654321",
-      coverUrl: "https://placehold.co/400",
-      description: "This is another currently reading book.",
-      pageCount: 250,
-      publishDate: "2021",
-      categories: ["Mystery"],
-    ),
-  ];
+  Book? _lastOpenedBook;
+  List<Book> _ownedBooks = [];
 
   late final List<Widget> _pages;
 
   @override
   void initState() {
     super.initState();
-    // Initialize the pages with data
+    _lastOpenedBook = Book(
+      title: "Example Book",
+      author: "Author Name",
+      isbn: "123456789",
+      coverUrl: "https://placehold.co/400",
+      description: "This is a description of the last opened book.",
+      pageCount: 200,
+      publishDate: "2023",
+      categories: ["Fiction", "Drama"],
+    );
     _pages = [
       HomeScreen(
         lastOpenedBook: _lastOpenedBook,
-        currentlyReadingBooks: _currentlyReadingBooks,
+        ownedBooks: _ownedBooks,
+        onBookAdded: _addBookToLibrary,
       ),
       const MarketScreen(),
-      const MyBooksScreen(),
-      const BookImportScreen(),
+      MyBooksScreen(
+        ownedBooks: _ownedBooks,
+        onBookTap: (book) => setState(() => _lastOpenedBook = book),
+      ),
+      BookImportScreen(
+        onBookImported: _addBookToLibrary,
+      ),
     ];
+  }
+
+  void _addBookToLibrary(Book book) {
+    setState(() {
+      _ownedBooks.add(book);
+      _lastOpenedBook = book;
+    });
   }
 
   void _navigateToPage(int index) {
@@ -92,22 +82,22 @@ class _ScreensWrapperState extends State<ScreensWrapper> {
             ListTile(
               leading: const Icon(Icons.home),
               title: const Text('Home'),
-              onTap: () => _navigateToPage(0), // Navigate to Home
+              onTap: () => _navigateToPage(0),
             ),
             ListTile(
               leading: const Icon(Icons.store),
               title: const Text('Market'),
-              onTap: () => _navigateToPage(1), // Navigate to Market
+              onTap: () => _navigateToPage(1),
             ),
             ListTile(
               leading: const Icon(Icons.book),
               title: const Text('My Books'),
-              onTap: () => _navigateToPage(2), // Navigate to My Books
+              onTap: () => _navigateToPage(2),
             ),
             ListTile(
               leading: const Icon(Icons.import_contacts),
               title: const Text('Import Books'),
-              onTap: () => _navigateToPage(3), // Navigate to Import Books
+              onTap: () => _navigateToPage(3),
             ),
           ],
         ),
