@@ -16,10 +16,6 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    _startDelayTimer();
-  }
-
-  void _startDelayTimer() {
     Timer(const Duration(seconds: 3), () {
       setState(() {
         _isLoading = false;
@@ -31,19 +27,33 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Ebook Reader',
+      title: 'DuckReader',
       theme: ebookTheme,
       home: _isLoading ? _buildLoadingScreen() : const ScreensWrapper(),
     );
   }
 
   Widget _buildLoadingScreen() {
-    return Center(
-      child: Image.asset(
-        'assets/images/walkingduck.gif',
-        fit: BoxFit.contain,
-        width: MediaQuery.of(context).size.width * 0.25,
-        height: MediaQuery.of(context).size.height * 0.25,
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              'assets/images/readingduck.png',
+              width: 120,
+              height: 120,
+            ),
+            const SizedBox(height: 20),
+            const CircularProgressIndicator(color: Colors.purple),
+            const SizedBox(height: 10),
+            const Text(
+              'Loading DuckReader...',
+              style: TextStyle(fontSize: 16, color: Colors.purple),
+            ),
+          ],
+        ),
       ),
     );
   }
