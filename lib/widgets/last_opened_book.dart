@@ -72,7 +72,7 @@ class LastOpenedBook extends StatelessWidget {
                             const SizedBox(height: 8),
                             Text(
                               "By ${lastOpenedBook!.author}",
-                              style: Theme.of(context).textTheme.bodyMedium,
+                              style: Theme.of(context).textTheme.bodySmall,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
