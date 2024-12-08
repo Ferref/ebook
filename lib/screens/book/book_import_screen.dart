@@ -14,14 +14,12 @@ class BookImportScreen extends StatefulWidget {
 }
 
 class _BookImportScreenState extends State<BookImportScreen> {
-  final Set<String> _importedFileNames =
-      {}; // Nyilvántartás az importált fájlokról
+  final Set<String> _importedFileNames = {};
   List<Book> importedBooks = [];
   Book? lastImportedBook;
 
   Future<void> _importBook() async {
     try {
-      // Fájl kiválasztása
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['epub', 'pdf', 'prc'],
@@ -31,7 +29,6 @@ class _BookImportScreenState extends State<BookImportScreen> {
         final platformFile = result.files.single;
         String fileName = platformFile.name;
 
-        // Ellenőrizzük, hogy a fájl már importálva lett-e
         if (_importedFileNames.contains(fileName)) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -41,9 +38,7 @@ class _BookImportScreenState extends State<BookImportScreen> {
           return;
         }
 
-        // Ha még nincs importálva, dolgozzuk fel
-        _importedFileNames.add(
-            fileName); // Adjuk hozzá az importált fájlokat követő halmazhoz
+        _importedFileNames.add(fileName);
 
         Uint8List? fileBytes;
         if (kIsWeb) {
@@ -52,7 +47,6 @@ class _BookImportScreenState extends State<BookImportScreen> {
           fileBytes = await File(platformFile.path!).readAsBytes();
         }
 
-        // Könyv metaadatok feldolgozása
         final book = await _extractMetadata(fileName, fileBytes);
 
         setState(() {
@@ -66,7 +60,6 @@ class _BookImportScreenState extends State<BookImportScreen> {
           SnackBar(content: Text('Book imported: ${book.title}')),
         );
 
-        // Könyv részleteinek megjelenítése
         _showBookDetails(book);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -144,9 +137,10 @@ class _BookImportScreenState extends State<BookImportScreen> {
       appBar: AppBar(
         title: const Text('Import Books'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: Center(
+        // Középre igazítja az egész tartalmat
         child: Column(
+          mainAxisSize: MainAxisSize.min, // Csak a szükséges helyet foglalja el
           children: [
             ElevatedButton(
               onPressed: _importBook,
@@ -155,7 +149,7 @@ class _BookImportScreenState extends State<BookImportScreen> {
             const SizedBox(height: 20),
             if (lastImportedBook != null)
               Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
                     'Last Imported Book:',
