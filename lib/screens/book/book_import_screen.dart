@@ -14,8 +14,7 @@ class BookImportScreen extends StatefulWidget {
 }
 
 class _BookImportScreenState extends State<BookImportScreen> {
-  final Set<String> _importedFileNames = {};
-  List<Book> importedBooks = [];
+  final Set<String> _importedFilePaths = {};
   Book? lastImportedBook;
 
   Future<void> _importBook() async {
@@ -27,30 +26,28 @@ class _BookImportScreenState extends State<BookImportScreen> {
 
       if (result != null) {
         final platformFile = result.files.single;
-        String fileName = platformFile.name;
+        String? filePath = platformFile.path;
 
-        if (_importedFileNames.contains(fileName)) {
+        if (filePath == null) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content:
-                    Text('This file has already been imported: $fileName')),
+            const SnackBar(content: Text('File path is invalid.')),
           );
           return;
         }
 
-        _importedFileNames.add(fileName);
-
-        Uint8List? fileBytes;
-        if (kIsWeb) {
-          fileBytes = platformFile.bytes;
-        } else {
-          fileBytes = await File(platformFile.path!).readAsBytes();
+        if (_importedFilePaths.contains(filePath)) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text(
+                    'This file has already been imported: ${platformFile.name}')),
+          );
+          return;
         }
 
-        final book = await _extractMetadata(fileName, fileBytes);
+        _importedFilePaths.add(filePath);
+        final book = await _extractMetadata(filePath);
 
         setState(() {
-          importedBooks.add(book);
           lastImportedBook = book;
         });
 
@@ -59,8 +56,6 @@ class _BookImportScreenState extends State<BookImportScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Book imported: ${book.title}')),
         );
-
-        _showBookDetails(book);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('No file selected.')),
@@ -73,61 +68,28 @@ class _BookImportScreenState extends State<BookImportScreen> {
     }
   }
 
-  Future<Book> _extractMetadata(
-      String filePathOrName, Uint8List? fileBytes) async {
-    String title = 'Unknown Title';
+  Future<Book> _extractMetadata(String filePath) async {
+    String fileName = filePath.split('/').last;
+    String title = fileName.split('.').first;
     String author = 'Unknown Author';
-    String coverUrl = 'https://placehold.co/400';
 
-    if (filePathOrName.contains('-')) {
-      final parts = filePathOrName.split('-');
+    if (fileName.contains('-')) {
+      final parts = fileName.split('-');
       if (parts.length >= 2) {
         author = parts[0].trim();
         title = parts[1].split('.').first.trim();
       }
-    } else {
-      title = filePathOrName.split('.').first.trim();
     }
 
     return Book(
       title: title,
       author: author,
       isbn: 'N/A',
-      coverUrl: coverUrl,
+      coverUrl: filePath,
       description: 'Imported from local file.',
       pageCount: null,
       publishDate: null,
       categories: [],
-    );
-  }
-
-  void _showBookDetails(Book book) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(book.title),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Author: ${book.author}'),
-              const SizedBox(height: 10),
-              Image.network(
-                book.coverUrl,
-                height: 150,
-                errorBuilder: (context, error, stackTrace) =>
-                    const Icon(Icons.broken_image, size: 50),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
-            ),
-          ],
-        );
-      },
     );
   }
 
@@ -138,9 +100,8 @@ class _BookImportScreenState extends State<BookImportScreen> {
         title: const Text('Import Books'),
       ),
       body: Center(
-        // Középre igazítja az egész tartalmat
         child: Column(
-          mainAxisSize: MainAxisSize.min, // Csak a szükséges helyet foglalja el
+          mainAxisSize: MainAxisSize.min,
           children: [
             ElevatedButton(
               onPressed: _importBook,

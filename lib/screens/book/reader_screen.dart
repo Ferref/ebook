@@ -1,5 +1,4 @@
-import 'dart:io' show File;
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:epubx/epubx.dart';
 import '../../models/books.dart';
@@ -10,7 +9,7 @@ class ReaderScreen extends StatefulWidget {
   const ReaderScreen({super.key, required this.book});
 
   @override
-  State<ReaderScreen> createState() => _ReaderScreenState();
+  _ReaderScreenState createState() => _ReaderScreenState();
 }
 
 class _ReaderScreenState extends State<ReaderScreen> {
@@ -21,27 +20,15 @@ class _ReaderScreenState extends State<ReaderScreen> {
   @override
   void initState() {
     super.initState();
-    _loadBook();
+    _loadEpubBook();
   }
 
-  Future<void> _loadBook() async {
-    if (kIsWeb) {
-      // Handle unsupported operation for the web
-      setState(() {
-        _errorMessage =
-            "EPUB reading is not supported on the web. Please use the app on a mobile device.";
-        _isLoading = false;
-      });
-      return;
-    }
-
+  Future<void> _loadEpubBook() async {
     try {
-      // Attempt to load the EPUB file for native platforms
-      final fileBytes = File(widget.book.coverUrl).readAsBytesSync();
-      final epubBook = await EpubReader.openBook(fileBytes);
-
+      final bytes = File(widget.book.coverUrl).readAsBytesSync();
+      final epubBookRef = await EpubReader.openBook(bytes);
       setState(() {
-        _epubBookRef = epubBook;
+        _epubBookRef = epubBookRef;
         _isLoading = false;
       });
     } catch (e) {
@@ -59,7 +46,9 @@ class _ReaderScreenState extends State<ReaderScreen> {
         appBar: AppBar(
           title: Text(widget.book.title),
         ),
-        body: const Center(child: CircularProgressIndicator()),
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
       );
     }
 
@@ -71,23 +60,20 @@ class _ReaderScreenState extends State<ReaderScreen> {
         body: Center(
           child: Text(
             _errorMessage!,
-            style: const TextStyle(fontSize: 16, color: Colors.red),
-            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium,
           ),
         ),
       );
     }
 
-    // When book is loaded successfully
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.book.title),
       ),
       body: Center(
         child: Text(
-          "Book '${widget.book.title}' loaded successfully!",
-          style: const TextStyle(fontSize: 18),
-          textAlign: TextAlign.center,
+          "Epub Book Loaded Successfully!",
+          style: Theme.of(context).textTheme.headlineMedium,
         ),
       ),
     );
