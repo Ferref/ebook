@@ -492,12 +492,12 @@ class BookImportScreen extends StatefulWidget {
 }
 
 class _BookImportScreenState extends State<BookImportScreen> {
+  final Set<String> _importedFileNames = {};
   List<Book> importedBooks = [];
   Book? lastImportedBook;
 
   Future<void> _importBook() async {
     try {
-      // Use FilePicker to pick a file
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['epub', 'pdf', 'prc'],
@@ -505,21 +505,27 @@ class _BookImportScreenState extends State<BookImportScreen> {
 
       if (result != null) {
         final platformFile = result.files.single;
-        String filePathOrName = platformFile.name;
-        Uint8List? fileBytes;
+        String fileName = platformFile.name;
 
-        if (kIsWeb) {
-          // Handle web platform file import
-          fileBytes = platformFile.bytes;
-        } else {
-          // Handle mobile or desktop platforms
-          filePathOrName = platformFile.path ?? platformFile.name;
-          final file = File(filePathOrName);
-          fileBytes = await file.readAsBytes();
+        if (_importedFileNames.contains(fileName)) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content:
+                    Text('This file has already been imported: $fileName')),
+          );
+          return;
         }
 
-        // Process the imported book
-        final book = await _extractMetadata(filePathOrName, fileBytes);
+        _importedFileNames.add(fileName);
+
+        Uint8List? fileBytes;
+        if (kIsWeb) {
+          fileBytes = platformFile.bytes;
+        } else {
+          fileBytes = await File(platformFile.path!).readAsBytes();
+        }
+
+        final book = await _extractMetadata(fileName, fileBytes);
 
         setState(() {
           importedBooks.add(book);
@@ -532,8 +538,6 @@ class _BookImportScreenState extends State<BookImportScreen> {
           SnackBar(content: Text('Book imported: ${book.title}')),
         );
 
-        // Simulate opening the book (replace this with real functionality)
-        await Future.delayed(const Duration(seconds: 2));
         _showBookDetails(book);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -611,9 +615,10 @@ class _BookImportScreenState extends State<BookImportScreen> {
       appBar: AppBar(
         title: const Text('Import Books'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: Center(
+        // Középre igazítja az egész tartalmat
         child: Column(
+          mainAxisSize: MainAxisSize.min, // Csak a szükséges helyet foglalja el
           children: [
             ElevatedButton(
               onPressed: _importBook,
@@ -622,7 +627,7 @@ class _BookImportScreenState extends State<BookImportScreen> {
             const SizedBox(height: 20),
             if (lastImportedBook != null)
               Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
                     'Last Imported Book:',
@@ -671,6 +676,80 @@ class MyBooksScreen extends StatelessWidget {
                 );
               },
             ),
+    );
+  }
+}
+
+reader_screen.dart
+import 'package:flutter/material.dart';
+import '../../models/books.dart';
+
+class ReaderScreen extends StatefulWidget {
+  final Book book;
+  final int? lastReadPage;
+
+  const ReaderScreen({super.key, required this.book, this.lastReadPage});
+
+  @override
+  _ReaderScreenState createState() => _ReaderScreenState();
+}
+
+class _ReaderScreenState extends State<ReaderScreen> {
+  int currentPage = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    currentPage = widget.lastReadPage ?? 0; // Start at last read page or page 0
+  }
+
+  void _goToNextPage() {
+    setState(() {
+      currentPage++;
+    });
+  }
+
+  void _goToPreviousPage() {
+    setState(() {
+      currentPage = (currentPage > 0) ? currentPage - 1 : 0;
+    });
+  }
+
+  @override
+  void dispose() {
+    Navigator.pop(context, currentPage); // Pass back the current page
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(widget.book.title)),
+      body: Column(
+        children: [
+          Expanded(
+            child: Center(
+              child: Text(
+                'Reading page: $currentPage',
+                style: Theme.of(context).textTheme.headline4,
+              ),
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton(
+                onPressed: _goToPreviousPage,
+                child: const Text('Previous Page'),
+              ),
+              ElevatedButton(
+                onPressed: _goToNextPage,
+                child: const Text('Next Page'),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
