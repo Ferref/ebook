@@ -1,0 +1,1302 @@
+web_plugin_registrant.dart
+// Flutter web plugin registrant file.
+//
+// Generated file. Do not edit.
+//
+
+// @dart = 2.13
+// ignore_for_file: type=lint
+
+import 'package:device_info_plus/src/device_info_plus_web.dart';
+import 'package:file_picker/_internal/file_picker_web.dart';
+import 'package:syncfusion_pdfviewer_web/pdfviewer_web.dart';
+import 'package:url_launcher_web/url_launcher_web.dart';
+import 'package:flutter_web_plugins/flutter_web_plugins.dart';
+
+void registerPlugins([final Registrar? pluginRegistrar]) {
+  final Registrar registrar = pluginRegistrar ?? webPluginRegistrar;
+  DeviceInfoPlusWebPlugin.registerWith(registrar);
+  FilePickerWeb.registerWith(registrar);
+  SyncfusionFlutterPdfViewerPlugin.registerWith(registrar);
+  UrlLauncherPlugin.registerWith(registrar);
+  registrar.registerMessageHandler();
+}
+
+app.dart
+import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:ebook/themes/app_theme.dart';
+import 'package:ebook/screens/screens_wrapper.dart';
+
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _startDelayTimer();
+  }
+
+  void _startDelayTimer() {
+    Timer(const Duration(seconds: 3), () {
+      setState(() {
+        _isLoading = false;
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Ebook Reader',
+      theme: ebookTheme,
+      home: _isLoading ? _buildLoadingScreen() : const ScreensWrapper(),
+    );
+  }
+
+  Widget _buildLoadingScreen() {
+    return Center(
+      child: Image.asset(
+        'assets/images/walkingduck.gif',
+        fit: BoxFit.contain,
+        width: MediaQuery.of(context).size.width * 0.25,
+        height: MediaQuery.of(context).size.height * 0.25,
+      ),
+    );
+  }
+}
+
+main.dart
+import 'package:flutter/material.dart';
+import 'app.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+openlibrary_service.dart
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import '../models/books.dart';
+
+class OpenLibraryService {
+  final String baseUrl = 'https://openlibrary.org';
+
+  Future<List<Book>> searchBooks(String query) async {
+    final url = Uri.parse('$baseUrl/search.json?q=$query');
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final books = (data['docs'] as List)
+          .map((bookData) => Book.fromJson(bookData))
+          .toList();
+      return books;
+    } else {
+      throw Exception('Failed to fetch books from Open Library API');
+    }
+  }
+}
+
+books.dart
+import 'dart:convert';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+
+class Book {
+  final String title;
+  final String author;
+  final String isbn;
+  final String coverUrl;
+  final String? description;
+  final int? pageCount;
+  final String? publishDate;
+  final List<String> categories;
+
+  Book({
+    required this.title,
+    required this.author,
+    required this.isbn,
+    required this.coverUrl,
+    this.description,
+    this.pageCount,
+    this.publishDate,
+    this.categories = const [],
+  });
+
+  // Open Library API válasz feldolgozása
+  factory Book.fromJson(Map<String, dynamic> json) {
+    return Book(
+      title: json['title'] ?? 'Unknown Title',
+      author: json['author_name'] != null
+          ? (json['author_name'] is List
+              ? (json['author_name'] as List).join(', ')
+              : json['author_name'].toString())
+          : 'Unknown Author',
+      isbn: json['isbn'] != null
+          ? (json['isbn'] is List ? json['isbn'][0] : json['isbn'].toString())
+          : 'N/A',
+      coverUrl: json['cover_i'] != null
+          ? 'https://covers.openlibrary.org/b/id/${json['cover_i']}-L.jpg'
+          : 'https://placehold.co/400',
+      description: json['description'] is String
+          ? json['description'] as String
+          : 'No description available.',
+      pageCount:
+          json['number_of_pages'] is int ? json['number_of_pages'] : null,
+      publishDate: json['publish_date'] is String ? json['publish_date'] : null,
+      categories: json['subject'] != null
+          ? (json['subject'] is List
+              ? List<String>.from(json['subject'])
+              : [json['subject'].toString()])
+          : [],
+    );
+  }
+
+  // Könyv létrehozása fájl alapján
+  static Future<Book> fromFile(String filePath) async {
+    print('Importing book from file: $filePath');
+
+    final fileType = filePath.split('.').last.toLowerCase();
+    final fileName = filePath.split('/').last;
+
+    String title = 'Unknown Title';
+    String author = 'Unknown Author';
+
+    // Fájlnév elemzése
+    if (fileName.contains('-')) {
+      final parts = fileName.replaceAll('.$fileType', '').split('-');
+      if (parts.length >= 2) {
+        author = parts[0].trim();
+        title = parts[1].trim();
+      }
+    } else {
+      title = fileName.replaceAll('.$fileType', '').trim();
+    }
+
+    print('Extracted from file name: Author: $author, Title: $title');
+
+    // Ellenőrzés: fájl tartalmának metaadatok feldolgozása
+    final extractedMetadata = await _extractMetadataFromFile(filePath);
+    if (extractedMetadata != null) {
+      author = extractedMetadata['author'] ?? author;
+      title = extractedMetadata['title'] ?? title;
+      print(
+          'Extracted metadata from file content: Title: ${extractedMetadata['title']}, Author: ${extractedMetadata['author']}');
+    } else {
+      print('No metadata extracted from file content.');
+    }
+
+    return Book(
+      title: title,
+      author: author,
+      isbn: 'N/A',
+      coverUrl: 'https://placehold.co/400', // Default cover image
+      description: 'Imported from local file.',
+      pageCount: null,
+      publishDate: null,
+      categories: [],
+    );
+  }
+
+  // Fájl tartalmának metaadatok kinyerése
+  static Future<Map<String, String>?> _extractMetadataFromFile(
+      String filePath) async {
+    try {
+      final file = File(filePath);
+      final content = await file.readAsString();
+
+      // Egyszerű logika: metaadatokat keresünk
+      final lines = content.split('\n');
+      final titleLine = lines.firstWhere(
+        (line) => line.toLowerCase().contains('title:'),
+        orElse: () => '',
+      );
+      final authorLine = lines.firstWhere(
+        (line) => line.toLowerCase().contains('author:'),
+        orElse: () => '',
+      );
+
+      // Ha metaadatok léteznek, térjünk vissza velük
+      final title = titleLine.replaceFirst('Title:', '').trim();
+      final author = authorLine.replaceFirst('Author:', '').trim();
+
+      if (title.isNotEmpty || author.isNotEmpty) {
+        return {'title': title, 'author': author};
+      }
+    } catch (e) {
+      print('Failed to extract metadata from file: $e');
+    }
+    return null;
+  }
+
+  // Open Library API fallback
+  static Future<Book?> _fetchBookMetadata(String title) async {
+    final url = Uri.parse('https://openlibrary.org/search.json?q=$title');
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final docs = data['docs'] as List?;
+      if (docs != null && docs.isNotEmpty) {
+        return Book.fromJson(docs.first);
+      } else {
+        print('No matching books found in Open Library API response.');
+      }
+    } else {
+      print('Failed to fetch book metadata: ${response.statusCode}');
+    }
+    return null;
+  }
+}
+
+screens_wrapper.dart
+import 'package:flutter/material.dart';
+import 'package:ebook/screens/home/home_screen.dart';
+import 'package:ebook/screens/market/market_screen.dart';
+import 'package:ebook/screens/book/book_import_screen.dart';
+import 'package:ebook/screens/book/my_books_screen.dart';
+import 'package:ebook/models/books.dart';
+
+class ScreensWrapper extends StatefulWidget {
+  const ScreensWrapper({super.key});
+
+  @override
+  _ScreensWrapperState createState() => _ScreensWrapperState();
+}
+
+class _ScreensWrapperState extends State<ScreensWrapper> {
+  int _currentIndex = 0;
+
+  Book? _lastOpenedBook;
+  List<Book> _ownedBooks = [];
+
+  late final List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    _lastOpenedBook = Book(
+      title: "Example Book",
+      author: "Author Name",
+      isbn: "123456789",
+      coverUrl: "https://placehold.co/400",
+      description: "This is a description of the last opened book.",
+      pageCount: 200,
+      publishDate: "2023",
+      categories: ["Fiction", "Drama"],
+    );
+    _pages = [
+      HomeScreen(
+        lastOpenedBook: _lastOpenedBook,
+        ownedBooks: _ownedBooks,
+        onBookAdded: _addBookToLibrary,
+      ),
+      const MarketScreen(),
+      MyBooksScreen(
+        ownedBooks: _ownedBooks,
+        onBookTap: (book) => setState(() => _lastOpenedBook = book),
+      ),
+      BookImportScreen(
+        onBookImported: _addBookToLibrary,
+      ),
+    ];
+  }
+
+  void _addBookToLibrary(Book book) {
+    setState(() {
+      _ownedBooks.add(book);
+      _lastOpenedBook = book;
+    });
+  }
+
+  void _navigateToPage(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+    Navigator.pop(context); // Close the drawer after navigation
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: _pages[_currentIndex],
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(color: Colors.blue),
+              child: Text(
+                'DuckReader Menu',
+                style: TextStyle(color: Colors.white, fontSize: 24),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.home),
+              title: const Text('Home'),
+              onTap: () => _navigateToPage(0),
+            ),
+            ListTile(
+              leading: const Icon(Icons.store),
+              title: const Text('Market'),
+              onTap: () => _navigateToPage(1),
+            ),
+            ListTile(
+              leading: const Icon(Icons.book),
+              title: const Text('My Books'),
+              onTap: () => _navigateToPage(2),
+            ),
+            ListTile(
+              leading: const Icon(Icons.import_contacts),
+              title: const Text('Import Books'),
+              onTap: () => _navigateToPage(3),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+book_details_screen.dart
+import 'package:flutter/material.dart';
+import '../../models/books.dart';
+
+class BookDetailsScreen extends StatelessWidget {
+  final Book book;
+
+  const BookDetailsScreen({super.key, required this.book});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          book.title,
+          style: Theme.of(context).textTheme.headlineSmall,
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Book Cover
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                book.coverUrl,
+                height: 300,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    height: 300,
+                    color: Colors.grey.shade300,
+                    child: const Icon(Icons.broken_image, size: 100),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 20),
+            // Title
+            Text(
+              book.title,
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            const SizedBox(height: 10),
+            // Author
+            Text(
+              "By ${book.author}",
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+            const SizedBox(height: 20),
+            // Description
+            Text(
+              "Description:",
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              book.description ?? "No description available.",
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 20),
+            // Additional Info (Pages and Published Date)
+            Row(
+              children: [
+                if (book.pageCount != null)
+                  Text(
+                    "Pages: ${book.pageCount}",
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                if (book.pageCount != null) const SizedBox(width: 20),
+                if (book.publishDate != null)
+                  Text(
+                    "Published: ${book.publishDate}",
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            // Categories
+            if (book.categories.isNotEmpty)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Categories:",
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    children: book.categories.map((category) {
+                      return Chip(
+                        label: Text(category),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+book_import_screen.dart
+import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
+import '../../models/books.dart';
+
+class BookImportScreen extends StatefulWidget {
+  final Function(Book) onBookImported;
+
+  const BookImportScreen({super.key, required this.onBookImported});
+
+  @override
+  _BookImportScreenState createState() => _BookImportScreenState();
+}
+
+class _BookImportScreenState extends State<BookImportScreen> {
+  List<Book> importedBooks = [];
+  Book? lastImportedBook;
+
+  Future<void> _importBook() async {
+    try {
+      // Use FilePicker to pick a file
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['epub', 'pdf', 'prc'],
+      );
+
+      if (result != null) {
+        final platformFile = result.files.single;
+        String filePathOrName = platformFile.name;
+        Uint8List? fileBytes;
+
+        if (kIsWeb) {
+          // Handle web platform file import
+          fileBytes = platformFile.bytes;
+        } else {
+          // Handle mobile or desktop platforms
+          filePathOrName = platformFile.path ?? platformFile.name;
+          final file = File(filePathOrName);
+          fileBytes = await file.readAsBytes();
+        }
+
+        // Process the imported book
+        final book = await _extractMetadata(filePathOrName, fileBytes);
+
+        setState(() {
+          importedBooks.add(book);
+          lastImportedBook = book;
+        });
+
+        widget.onBookImported(book);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Book imported: ${book.title}')),
+        );
+
+        // Simulate opening the book (replace this with real functionality)
+        await Future.delayed(const Duration(seconds: 2));
+        _showBookDetails(book);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No file selected.')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error importing book: $e')),
+      );
+    }
+  }
+
+  Future<Book> _extractMetadata(
+      String filePathOrName, Uint8List? fileBytes) async {
+    String title = 'Unknown Title';
+    String author = 'Unknown Author';
+    String coverUrl = 'https://placehold.co/400';
+
+    if (filePathOrName.contains('-')) {
+      final parts = filePathOrName.split('-');
+      if (parts.length >= 2) {
+        author = parts[0].trim();
+        title = parts[1].split('.').first.trim();
+      }
+    } else {
+      title = filePathOrName.split('.').first.trim();
+    }
+
+    return Book(
+      title: title,
+      author: author,
+      isbn: 'N/A',
+      coverUrl: coverUrl,
+      description: 'Imported from local file.',
+      pageCount: null,
+      publishDate: null,
+      categories: [],
+    );
+  }
+
+  void _showBookDetails(Book book) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(book.title),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Author: ${book.author}'),
+              const SizedBox(height: 10),
+              Image.network(
+                book.coverUrl,
+                height: 150,
+                errorBuilder: (context, error, stackTrace) =>
+                    const Icon(Icons.broken_image, size: 50),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Import Books'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            ElevatedButton(
+              onPressed: _importBook,
+              child: const Text('Import Book'),
+            ),
+            const SizedBox(height: 20),
+            if (lastImportedBook != null)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Last Imported Book:',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                  const SizedBox(height: 10),
+                  Text('Title: ${lastImportedBook!.title}'),
+                  Text('Author: ${lastImportedBook!.author}'),
+                ],
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+my_books_screen.dart
+import 'package:flutter/material.dart';
+import '../../models/books.dart';
+
+class MyBooksScreen extends StatelessWidget {
+  final List<Book> ownedBooks;
+  final void Function(Book book) onBookTap;
+
+  const MyBooksScreen({
+    super.key,
+    required this.ownedBooks,
+    required this.onBookTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("My Books")),
+      body: ownedBooks.isEmpty
+          ? const Center(child: Text("No books available."))
+          : ListView.builder(
+              itemCount: ownedBooks.length,
+              itemBuilder: (context, index) {
+                final book = ownedBooks[index];
+                return ListTile(
+                  title: Text(book.title),
+                  subtitle: Text(book.author),
+                  onTap: () => onBookTap(book),
+                );
+              },
+            ),
+    );
+  }
+}
+
+home_screen.dart
+import 'package:flutter/material.dart';
+import '../../models/books.dart';
+import '../book/my_books_screen.dart';
+import '../book/book_import_screen.dart';
+import '../market/market_screen.dart';
+import 'package:ebook/widgets/last_opened_book.dart';
+
+class HomeScreen extends StatelessWidget {
+  final Book? lastOpenedBook;
+  final List<Book> ownedBooks;
+  final Function(Book) onBookAdded;
+
+  const HomeScreen({
+    super.key,
+    required this.lastOpenedBook,
+    required this.ownedBooks,
+    required this.onBookAdded,
+  });
+
+  void _openMyBooksScreen(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MyBooksScreen(
+          ownedBooks: ownedBooks,
+          onBookTap: (book) => onBookAdded(book),
+        ),
+      ),
+    );
+  }
+
+  void _openImportBooksScreen(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BookImportScreen(
+          onBookImported: onBookAdded,
+        ),
+      ),
+    );
+  }
+
+  void _openMarketScreen(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const MarketScreen(),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("DuckReader - Home"),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(color: Colors.blue),
+              child: Text(
+                'DuckReader Menu',
+                style: TextStyle(color: Colors.white, fontSize: 24),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.home),
+              title: const Text('Home'),
+              onTap: () => Navigator.pop(context), // Close drawer
+            ),
+            ListTile(
+              leading: const Icon(Icons.store),
+              title: const Text('Market'),
+              onTap: () {
+                Navigator.pop(context); // Close drawer
+                _openMarketScreen(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.book),
+              title: const Text('My Books'),
+              onTap: () {
+                Navigator.pop(context); // Close drawer
+                _openMyBooksScreen(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.import_contacts),
+              title: const Text('Import Books'),
+              onTap: () {
+                Navigator.pop(context); // Close drawer
+                _openImportBooksScreen(context);
+              },
+            ),
+          ],
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            LastOpenedBook(lastOpenedBook: lastOpenedBook),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () => _openMyBooksScreen(context),
+              child: const Text("Go to My Books"),
+            ),
+            ElevatedButton(
+              onPressed: () => _openImportBooksScreen(context),
+              child: const Text("Import a Book"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+market_screen.dart
+import 'package:flutter/material.dart';
+import '../../api/openlibrary_service.dart';
+import '../../models/books.dart';
+import 'package:ebook/screens/book/book_details_screen.dart';
+
+class MarketScreen extends StatefulWidget {
+  const MarketScreen({super.key});
+
+  @override
+  _MarketScreenState createState() => _MarketScreenState();
+}
+
+class _MarketScreenState extends State<MarketScreen> {
+  final OpenLibraryService _openLibraryService = OpenLibraryService();
+  List<Book> _books = [];
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchBooks('fiction'); // Default category for initial load
+  }
+
+  Future<void> _fetchBooks(String query) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final books = await _openLibraryService.searchBooks(query);
+      setState(() {
+        _books = books;
+      });
+    } catch (e) {
+      print('Error fetching books: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _navigateToBookDetails(Book book) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BookDetailsScreen(book: book),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("DuckReader - Market"),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Search Bar
+            TextField(
+              decoration: const InputDecoration(
+                hintText: 'Search for books...',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (value) {
+                if (value.isEmpty) {
+                  _fetchBooks('fiction'); // Reload default
+                } else {
+                  _fetchBooks(value);
+                }
+              },
+            ),
+            const SizedBox(height: 20),
+
+            // Loading Indicator
+            if (_isLoading)
+              const Center(child: CircularProgressIndicator())
+            else
+              // Books List
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _books.length,
+                  itemBuilder: (context, index) {
+                    final book = _books[index];
+                    return ListTile(
+                      leading: Image.network(
+                        book.coverUrl,
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(Icons.broken_image, size: 50);
+                        },
+                      ),
+                      title: Text(book.title),
+                      subtitle: Text(book.author),
+                      onTap: () => _navigateToBookDetails(book),
+                    );
+                  },
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+app_theme.dart
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+final ThemeData ebookTheme = ThemeData(
+  scaffoldBackgroundColor: Colors.white,
+  bottomNavigationBarTheme: BottomNavigationBarThemeData(
+    backgroundColor: Colors.white,
+    elevation: 0,
+    unselectedItemColor: Colors.grey[200],
+    selectedItemColor: Colors.purple,
+  ),
+  primaryColor: Colors.white,
+  appBarTheme: AppBarTheme(
+    elevation: 0,
+    backgroundColor: Colors.black,
+    iconTheme: const IconThemeData(color: Colors.white),
+    titleTextStyle: GoogleFonts.aboreto(
+      letterSpacing: 1.5,
+      fontSize: 24,
+      color: Colors.white,
+      fontWeight: FontWeight.bold,
+    ),
+  ),
+  progressIndicatorTheme: ProgressIndicatorThemeData(
+    color: Colors.purple,
+    linearTrackColor: Colors.purple[200],
+  ),
+  textTheme: TextTheme(
+    titleSmall: GoogleFonts.aboreto(
+      fontSize: 12,
+      color: Colors.white,
+    ),
+    titleMedium: GoogleFonts.aboreto(
+      fontSize: 16,
+      color: Colors.white,
+    ),
+    titleLarge: GoogleFonts.aboreto(
+      fontSize: 20,
+      color: Colors.black,
+    ),
+    labelSmall: GoogleFonts.gildaDisplay(
+      fontSize: 20,
+    ),
+    labelMedium: GoogleFonts.gildaDisplay(
+      fontSize: 26,
+    ),
+    labelLarge: GoogleFonts.gildaDisplay(
+      fontSize: 32,
+    ),
+    bodySmall: GoogleFonts.gildaDisplay(
+      fontSize: 20,
+    ),
+    bodyMedium: GoogleFonts.gildaDisplay(
+      fontSize: 26,
+    ),
+    bodyLarge: GoogleFonts.gildaDisplay(
+      fontSize: 32,
+    ),
+    headlineLarge: GoogleFonts.gildaDisplay(
+      fontSize: 30,
+      color: Colors.white,
+      fontWeight: FontWeight.w500,
+    ),
+    headlineMedium: GoogleFonts.gildaDisplay(
+      fontSize: 30,
+      color: Colors.white,
+      fontWeight: FontWeight.w500,
+    ),
+    headlineSmall: GoogleFonts.gildaDisplay(
+      fontSize: 30,
+      color: Colors.white,
+      fontWeight: FontWeight.w500,
+    ),
+  ),
+  iconTheme: const IconThemeData(color: Colors.purple),
+  buttonTheme: const ButtonThemeData(
+    buttonColor: Colors.purple,
+  ),
+);
+
+book_cover.dart
+import 'package:flutter/material.dart';
+
+// 3D effect a KOnyveknek
+class BookCover3D extends StatefulWidget {
+  final String imageUrl;
+
+  BookCover3D({
+    required this.imageUrl,
+  });
+
+  @override
+  State<BookCover3D> createState() => _BookCover3DState();
+}
+
+class _BookCover3DState extends State<BookCover3D> {
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 100,
+      height: 200,
+      child: Transform(
+        transform: Matrix4.identity()
+          ..setEntry(2, 2, 0.001)
+          ..rotateY(0.25),
+        alignment: FractionalOffset.center,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            AspectRatio(
+              aspectRatio: 2 / 3,
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10.0),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black26,
+                      offset: Offset(2.0, 4.0),
+                      blurRadius: 3.0,
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8.0),
+                  child: Image.network(
+                    widget.imageUrl,
+                    fit: BoxFit.fitWidth,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+currently_reading.dart
+import 'package:flutter/material.dart';
+import '../../models/books.dart';
+
+class CurrentlyReading extends StatelessWidget {
+  final List<Book> currentlyReadingBooks;
+
+  const CurrentlyReading({super.key, required this.currentlyReadingBooks});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Currently Reading",
+          style: Theme.of(context).textTheme.headlineSmall,
+        ),
+        const SizedBox(height: 10),
+        currentlyReadingBooks.isEmpty
+            ? const Text(
+                "You are not currently reading any books.",
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+              )
+            : SizedBox(
+                height: 200,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: currentlyReadingBooks.length,
+                  itemBuilder: (context, index) {
+                    final book = currentlyReadingBooks[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 10.0),
+                      child: Column(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8.0),
+                            child: Image.network(
+                              book.coverUrl,
+                              width: 120,
+                              height: 150,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  width: 120,
+                                  height: 150,
+                                  color: Colors.grey,
+                                  child: const Icon(Icons.broken_image),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          SizedBox(
+                            width: 120,
+                            child: Text(
+                              book.title,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+      ],
+    );
+  }
+}
+
+last_opened_book.dart
+import 'package:flutter/material.dart';
+import '../../models/books.dart';
+
+class LastOpenedBook extends StatelessWidget {
+  final Book? lastOpenedBook;
+
+  const LastOpenedBook({super.key, required this.lastOpenedBook});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Last Opened Book",
+          style: Theme.of(context).textTheme.headlineSmall,
+        ),
+        const SizedBox(height: 10),
+        lastOpenedBook == null
+            ? const Text(
+                "No book has been opened recently.",
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+              )
+            : Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.grey.shade200,
+                ),
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        lastOpenedBook!.coverUrl,
+                        width: 100,
+                        height: 140,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            width: 100,
+                            height: 140,
+                            color: Colors.grey,
+                            child: const Icon(Icons.broken_image),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            lastOpenedBook!.title,
+                            style: Theme.of(context).textTheme.titleMedium,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            "By ${lastOpenedBook!.author}",
+                            style: Theme.of(context).textTheme.bodyMedium,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 16),
+                          TextButton(
+                            onPressed: () {},
+                            style: TextButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
+                            ),
+                            child: const Text("Continue Reading"),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+      ],
+    );
+  }
+}
+
+owned_books.dart
+import 'package:flutter/material.dart';
+import '../../models/books.dart';
+
+class OwnedBooks extends StatelessWidget {
+  final List<Book> ownedBooks;
+  final void Function(Book book) onBookTap;
+
+  const OwnedBooks(
+      {super.key, required this.ownedBooks, required this.onBookTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "My Books",
+          style: Theme.of(context).textTheme.headlineSmall,
+        ),
+        const SizedBox(height: 10),
+        ownedBooks.isEmpty
+            ? const Text(
+                "You don't own any books yet.",
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+              )
+            : GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 10,
+                  crossAxisSpacing: 10,
+                  childAspectRatio: 0.7,
+                ),
+                itemCount: ownedBooks.length,
+                itemBuilder: (context, index) {
+                  final book = ownedBooks[index];
+                  return GestureDetector(
+                    onTap: () => onBookTap(book),
+                    child: Column(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(
+                            book.coverUrl,
+                            height: 150,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                height: 150,
+                                color: Colors.grey,
+                                child: const Icon(Icons.broken_image),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          book.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          book.author,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+      ],
+    );
+  }
+}
+
+reading_book.dart
+// ???

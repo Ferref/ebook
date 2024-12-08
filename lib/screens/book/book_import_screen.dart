@@ -14,12 +14,14 @@ class BookImportScreen extends StatefulWidget {
 }
 
 class _BookImportScreenState extends State<BookImportScreen> {
+  final Set<String> _importedFileNames =
+      {}; // Nyilvántartás az importált fájlokról
   List<Book> importedBooks = [];
   Book? lastImportedBook;
 
   Future<void> _importBook() async {
     try {
-      // Use FilePicker to pick a file
+      // Fájl kiválasztása
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['epub', 'pdf', 'prc'],
@@ -27,21 +29,31 @@ class _BookImportScreenState extends State<BookImportScreen> {
 
       if (result != null) {
         final platformFile = result.files.single;
-        String filePathOrName = platformFile.name;
-        Uint8List? fileBytes;
+        String fileName = platformFile.name;
 
-        if (kIsWeb) {
-          // Handle web platform file import
-          fileBytes = platformFile.bytes;
-        } else {
-          // Handle mobile or desktop platforms
-          filePathOrName = platformFile.path ?? platformFile.name;
-          final file = File(filePathOrName);
-          fileBytes = await file.readAsBytes();
+        // Ellenőrizzük, hogy a fájl már importálva lett-e
+        if (_importedFileNames.contains(fileName)) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content:
+                    Text('This file has already been imported: $fileName')),
+          );
+          return;
         }
 
-        // Process the imported book
-        final book = await _extractMetadata(filePathOrName, fileBytes);
+        // Ha még nincs importálva, dolgozzuk fel
+        _importedFileNames.add(
+            fileName); // Adjuk hozzá az importált fájlokat követő halmazhoz
+
+        Uint8List? fileBytes;
+        if (kIsWeb) {
+          fileBytes = platformFile.bytes;
+        } else {
+          fileBytes = await File(platformFile.path!).readAsBytes();
+        }
+
+        // Könyv metaadatok feldolgozása
+        final book = await _extractMetadata(fileName, fileBytes);
 
         setState(() {
           importedBooks.add(book);
@@ -54,8 +66,7 @@ class _BookImportScreenState extends State<BookImportScreen> {
           SnackBar(content: Text('Book imported: ${book.title}')),
         );
 
-        // Simulate opening the book (replace this with real functionality)
-        await Future.delayed(const Duration(seconds: 2));
+        // Könyv részleteinek megjelenítése
         _showBookDetails(book);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
