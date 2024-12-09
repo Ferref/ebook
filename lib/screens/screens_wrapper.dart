@@ -6,7 +6,9 @@ import 'market/market_screen.dart';
 import '../../models/books.dart';
 
 class ScreensWrapper extends StatefulWidget {
-  const ScreensWrapper({super.key});
+  final VoidCallback onThemeToggle;
+
+  const ScreensWrapper({super.key, required this.onThemeToggle});
 
   @override
   State<ScreensWrapper> createState() => _ScreensWrapperState();
@@ -20,6 +22,15 @@ class _ScreensWrapperState extends State<ScreensWrapper> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('DuckReader'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.brightness_6),
+            onPressed: widget.onThemeToggle,
+          ),
+        ],
+      ),
       body: [
         HomeScreen(
           lastOpenedBook: _lastOpenedBook,

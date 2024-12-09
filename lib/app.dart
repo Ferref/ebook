@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:ebook/themes/app_theme.dart';
 import 'package:ebook/screens/screens_wrapper.dart';
@@ -12,11 +11,23 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   bool _isLoading = true;
+  ThemeMode _themeMode = ThemeMode.system; // Default to system theme
+
+  void toggleThemeMode() {
+    setState(() {
+      _themeMode =
+          _themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+    });
+  }
 
   @override
   void initState() {
     super.initState();
-    Timer(const Duration(seconds: 3), () {
+    _startDelayTimer();
+  }
+
+  void _startDelayTimer() {
+    Future.delayed(const Duration(seconds: 3), () {
       setState(() {
         _isLoading = false;
       });
@@ -28,8 +39,12 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'DuckReader',
-      theme: ebookTheme,
-      home: _isLoading ? _buildLoadingScreen() : const ScreensWrapper(),
+      theme: ebookTheme, // Light theme
+      darkTheme: ebookDarkTheme, // Dark theme
+      themeMode: _themeMode, // Toggle between light and dark themes
+      home: _isLoading
+          ? _buildLoadingScreen()
+          : ScreensWrapper(onThemeToggle: toggleThemeMode),
     );
   }
 
