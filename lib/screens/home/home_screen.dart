@@ -5,13 +5,11 @@ import '../../widgets/last_opened_book.dart';
 class HomeScreen extends StatelessWidget {
   final Book? lastOpenedBook;
   final List<Book> ownedBooks;
-  final Function(Book) onBookAdded;
 
   const HomeScreen({
     super.key,
     required this.lastOpenedBook,
     required this.ownedBooks,
-    required this.onBookAdded,
   });
 
   @override
@@ -23,13 +21,17 @@ class HomeScreen extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             LastOpenedBook(lastOpenedBook: lastOpenedBook),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {},
-              child: const Text('Import a Book'),
-            ),
+            if (ownedBooks.isEmpty)
+              Center(
+                child: Text(
+                  'No books available.',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ),
           ],
         ),
       ),

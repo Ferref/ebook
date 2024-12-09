@@ -219,8 +219,8 @@ class _PluginRegistrant {
 app.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:ebook/themes/app_theme.dart';
 import 'package:ebook/screens/screens_wrapper.dart';
+import 'package:ebook/themes/app_theme.dart';
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -247,14 +247,16 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'DuckReader',
-      theme: ebookTheme,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.dark,
       home: _isLoading ? _buildLoadingScreen() : const ScreensWrapper(),
     );
   }
 
   Widget _buildLoadingScreen() {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.black,
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -265,11 +267,11 @@ class _MyAppState extends State<MyApp> {
               height: 120,
             ),
             const SizedBox(height: 20),
-            const CircularProgressIndicator(color: Colors.purple),
+            const CircularProgressIndicator(color: Colors.yellow),
             const SizedBox(height: 10),
             const Text(
               'Loading DuckReader...',
-              style: TextStyle(fontSize: 16, color: Colors.purple),
+              style: TextStyle(fontSize: 16, color: Colors.yellow),
             ),
           ],
         ),
@@ -368,9 +370,10 @@ class Book {
 screens_wrapper.dart
 import 'package:flutter/material.dart';
 import 'home/home_screen.dart';
-import 'book/book_import_screen.dart';
 import 'book/my_books_screen.dart';
+import 'book/book_import_screen.dart';
 import 'market/market_screen.dart';
+import 'settings/settings_screen.dart';
 import '../../models/books.dart';
 
 class ScreensWrapper extends StatefulWidget {
@@ -383,7 +386,25 @@ class ScreensWrapper extends StatefulWidget {
 class _ScreensWrapperState extends State<ScreensWrapper> {
   int _currentIndex = 0;
   Book? _lastOpenedBook;
-  List<Book> _ownedBooks = [];
+  final List<Book> _ownedBooks = [];
+  Color _primaryColor = Colors.blue;
+  Color _secondaryColor = Colors.yellow;
+  Color _backgroundColor = Colors.black;
+
+  void _updateColors(Color primary, Color secondary, Color background) {
+    setState(() {
+      _primaryColor = primary;
+      _secondaryColor = secondary;
+      _backgroundColor = background;
+    });
+  }
+
+  void _addBook(Book book) {
+    setState(() {
+      _ownedBooks.add(book);
+      _lastOpenedBook = book;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -392,12 +413,6 @@ class _ScreensWrapperState extends State<ScreensWrapper> {
         HomeScreen(
           lastOpenedBook: _lastOpenedBook,
           ownedBooks: _ownedBooks,
-          onBookAdded: (book) {
-            setState(() {
-              _ownedBooks.add(book);
-              _lastOpenedBook = book;
-            });
-          },
         ),
         const MarketScreen(),
         MyBooksScreen(
@@ -410,22 +425,25 @@ class _ScreensWrapperState extends State<ScreensWrapper> {
         ),
         BookImportScreen(
           onBookImported: (book) {
-            setState(() {
-              _ownedBooks.add(book);
-              _lastOpenedBook = book;
-            });
+            _addBook(book);
           },
+        ),
+        SettingsScreen(
+          onColorChange: _updateColors,
         ),
       ][_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        selectedItemColor: Colors.purple,
-        unselectedItemColor: Colors.grey,
+        selectedItemColor: _primaryColor,
+        unselectedItemColor: _secondaryColor,
+        backgroundColor: _backgroundColor,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Market'),
           BottomNavigationBarItem(icon: Icon(Icons.book), label: 'My Books'),
           BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Import'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.settings), label: 'Settings'),
         ],
         onTap: (index) {
           setState(() {
@@ -450,93 +468,40 @@ class BookDetailsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          book.title,
-          style: Theme.of(context).textTheme.headlineSmall,
-        ),
+        title: Text(book.title),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Book Cover
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                book.coverUrl,
-                height: 300,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    height: 300,
-                    color: Colors.grey.shade300,
-                    child: const Icon(Icons.broken_image, size: 100),
-                  );
-                },
-              ),
+            Image.network(
+              book.coverUrl,
+              height: 150,
+              width: 100,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  width: 100,
+                  height: 150,
+                  color: Colors.grey,
+                  child: const Icon(Icons.broken_image),
+                );
+              },
             ),
             const SizedBox(height: 20),
-            // Title
-            Text(
-              book.title,
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
+            Text(book.title, style: Theme.of(context).textTheme.headlineMedium),
             const SizedBox(height: 10),
-            // Author
-            Text(
-              "By ${book.author}",
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
+            Text("By ${book.author}",
+                style: Theme.of(context).textTheme.bodyMedium),
             const SizedBox(height: 20),
-            // Description
-            Text(
-              "Description:",
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 10),
-            Text(
-              book.description ?? "No description available.",
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 20),
-            // Additional Info (Pages and Published Date)
-            Row(
-              children: [
-                if (book.pageCount != null)
-                  Text(
-                    "Pages: ${book.pageCount}",
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                if (book.pageCount != null) const SizedBox(width: 20),
-                if (book.publishDate != null)
-                  Text(
-                    "Published: ${book.publishDate}",
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            // Categories
             if (book.categories.isNotEmpty)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Categories:",
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 8,
-                    children: book.categories.map((category) {
-                      return Chip(
-                        label: Text(category),
-                      );
-                    }).toList(),
-                  ),
-                ],
+              Wrap(
+                spacing: 8,
+                children: book.categories
+                    .take(5)
+                    .map((category) => Chip(label: Text(category)))
+                    .toList(),
               ),
           ],
         ),
@@ -547,7 +512,6 @@ class BookDetailsScreen extends StatelessWidget {
 
 book_import_screen.dart
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../models/books.dart';
@@ -563,7 +527,6 @@ class BookImportScreen extends StatefulWidget {
 
 class _BookImportScreenState extends State<BookImportScreen> {
   final Set<String> _importedFilePaths = {};
-  Book? lastImportedBook;
 
   Future<void> _importBook() async {
     try {
@@ -573,40 +536,26 @@ class _BookImportScreenState extends State<BookImportScreen> {
       );
 
       if (result != null) {
-        final platformFile = result.files.single;
-        String? filePath = platformFile.path;
+        final filePath = result.files.single.path;
 
-        if (filePath == null) {
+        if (filePath == null || _importedFilePaths.contains(filePath)) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('File path is invalid.')),
-          );
-          return;
-        }
-
-        if (_importedFilePaths.contains(filePath)) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content: Text(
-                    'This file has already been imported: ${platformFile.name}')),
+            const SnackBar(content: Text('File already imported.')),
           );
           return;
         }
 
         _importedFilePaths.add(filePath);
-        final book = await _extractMetadata(filePath);
-
-        setState(() {
-          lastImportedBook = book;
-        });
+        final book = Book(
+          title: result.files.single.name,
+          author: 'Unknown',
+          isbn: '',
+          coverUrl: 'https://placehold.co/100x150',
+        );
 
         widget.onBookImported(book);
-
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Book imported: ${book.title}')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No file selected.')),
         );
       }
     } catch (e) {
@@ -616,60 +565,14 @@ class _BookImportScreenState extends State<BookImportScreen> {
     }
   }
 
-  Future<Book> _extractMetadata(String filePath) async {
-    String fileName = filePath.split('/').last;
-    String title = fileName.split('.').first;
-    String author = 'Unknown Author';
-
-    if (fileName.contains('-')) {
-      final parts = fileName.split('-');
-      if (parts.length >= 2) {
-        author = parts[0].trim();
-        title = parts[1].split('.').first.trim();
-      }
-    }
-
-    return Book(
-      title: title,
-      author: author,
-      isbn: 'N/A',
-      coverUrl: filePath,
-      description: 'Imported from local file.',
-      pageCount: null,
-      publishDate: null,
-      categories: [],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Import Books'),
-      ),
+      appBar: AppBar(title: const Text('Import Books')),
       body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ElevatedButton(
-              onPressed: _importBook,
-              child: const Text('Import Book'),
-            ),
-            const SizedBox(height: 20),
-            if (lastImportedBook != null)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    'Last Imported Book:',
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  const SizedBox(height: 10),
-                  Text('Title: ${lastImportedBook!.title}'),
-                  Text('Author: ${lastImportedBook!.author}'),
-                ],
-              ),
-          ],
+        child: ElevatedButton(
+          onPressed: _importBook,
+          child: const Text('Import Book'),
         ),
       ),
     );
@@ -812,13 +715,11 @@ import '../../widgets/last_opened_book.dart';
 class HomeScreen extends StatelessWidget {
   final Book? lastOpenedBook;
   final List<Book> ownedBooks;
-  final Function(Book) onBookAdded;
 
   const HomeScreen({
     super.key,
     required this.lastOpenedBook,
     required this.ownedBooks,
-    required this.onBookAdded,
   });
 
   @override
@@ -830,13 +731,17 @@ class HomeScreen extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             LastOpenedBook(lastOpenedBook: lastOpenedBook),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {},
-              child: const Text('Import a Book'),
-            ),
+            if (ownedBooks.isEmpty)
+              Center(
+                child: Text(
+                  'No books available.',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ),
           ],
         ),
       ),
@@ -958,39 +863,205 @@ class _MarketScreenState extends State<MarketScreen> {
   }
 }
 
+settings_screen.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+
+class SettingsScreen extends StatefulWidget {
+  final Function(Color primary, Color secondary, Color background)
+      onColorChange;
+
+  const SettingsScreen({super.key, required this.onColorChange});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  Color _primaryColor = Colors.blue;
+  Color _secondaryColor = Colors.yellow;
+  Color _backgroundColor = Colors.black;
+
+  void _pickColor(Color currentColor, Function(Color) onColorChanged) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Pick a color"),
+          content: SingleChildScrollView(
+            child: BlockPicker(
+              pickerColor: currentColor,
+              onColorChanged: onColorChanged,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("Close"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Settings'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Customize Colors",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text("Primary Color"),
+                GestureDetector(
+                  onTap: () => _pickColor(
+                    _primaryColor,
+                    (color) {
+                      setState(() {
+                        _primaryColor = color;
+                        widget.onColorChange(
+                          _primaryColor,
+                          _secondaryColor,
+                          _backgroundColor,
+                        );
+                      });
+                    },
+                  ),
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: _primaryColor,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.grey),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text("Secondary Color"),
+                GestureDetector(
+                  onTap: () => _pickColor(
+                    _secondaryColor,
+                    (color) {
+                      setState(() {
+                        _secondaryColor = color;
+                        widget.onColorChange(
+                          _primaryColor,
+                          _secondaryColor,
+                          _backgroundColor,
+                        );
+                      });
+                    },
+                  ),
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: _secondaryColor,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.grey),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text("Background Color"),
+                GestureDetector(
+                  onTap: () => _pickColor(
+                    _backgroundColor,
+                    (color) {
+                      setState(() {
+                        _backgroundColor = color;
+                        widget.onColorChange(
+                          _primaryColor,
+                          _secondaryColor,
+                          _backgroundColor,
+                        );
+                      });
+                    },
+                  ),
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: _backgroundColor,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.grey),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 app_theme.dart
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-final ThemeData ebookTheme = ThemeData(
-  scaffoldBackgroundColor: Colors.grey[50],
-  appBarTheme: AppBarTheme(
-    backgroundColor: Colors.deepPurple,
-    elevation: 0,
-    titleTextStyle: GoogleFonts.lobster(
-      fontSize: 24,
-      color: Colors.white,
+class AppTheme {
+  static ThemeData lightTheme = ThemeData(
+    brightness: Brightness.light,
+    scaffoldBackgroundColor: Colors.grey[50],
+    primarySwatch: Colors.blue,
+    appBarTheme: const AppBarTheme(
+      backgroundColor: Colors.blue,
+      elevation: 0,
     ),
-  ),
-  textTheme: TextTheme(
-    bodyMedium: GoogleFonts.openSans(fontSize: 16, color: Colors.grey[800]),
-    headlineMedium: GoogleFonts.poppins(
-      fontSize: 24,
-      fontWeight: FontWeight.bold,
-      color: Colors.deepPurple,
+    textTheme: const TextTheme(
+      bodyMedium: TextStyle(fontSize: 16, color: Colors.black),
+      headlineMedium: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
     ),
-  ),
-  buttonTheme: const ButtonThemeData(
-    buttonColor: Colors.deepPurple,
-  ),
-  elevatedButtonTheme: ElevatedButtonThemeData(
-    style: ElevatedButton.styleFrom(
-      backgroundColor: Colors.deepPurple,
-      foregroundColor: Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      backgroundColor: Colors.white,
+      selectedItemColor: Colors.blue,
+      unselectedItemColor: Colors.grey,
     ),
-  ),
-);
+  );
+
+  static ThemeData darkTheme = ThemeData(
+    brightness: Brightness.dark,
+    scaffoldBackgroundColor: Colors.black,
+    primarySwatch: Colors.yellow,
+    appBarTheme: const AppBarTheme(
+      backgroundColor: Colors.black,
+      elevation: 0,
+    ),
+    textTheme: const TextTheme(
+      bodyMedium: TextStyle(fontSize: 16, color: Colors.white),
+      headlineMedium: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+    ),
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      backgroundColor: Colors.black,
+      selectedItemColor: Colors.yellow,
+      unselectedItemColor: Colors.grey,
+    ),
+  );
+}
 
 book_cover.dart
 import 'package:flutter/material.dart';
@@ -1150,20 +1221,33 @@ class LastOpenedBook extends StatelessWidget {
       children: [
         Text(
           "Last Opened Book",
-          style: Theme.of(context).textTheme.headlineSmall,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black,
+          ),
         ),
         const SizedBox(height: 10),
         lastOpenedBook == null
-            ? const Text(
+            ? Text(
                 "No book has been opened recently.",
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.grey.shade400
+                      : Colors.grey.shade700,
+                ),
               )
             : GestureDetector(
                 onTap: () => _openReaderScreen(context, lastOpenedBook!),
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    color: Colors.grey.shade200,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.grey.shade800
+                        : Colors.grey.shade200,
                   ),
                   padding: const EdgeInsets.all(12),
                   child: Row(
@@ -1202,18 +1286,6 @@ class LastOpenedBook extends StatelessWidget {
                               style: Theme.of(context).textTheme.bodySmall,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 16),
-                            TextButton(
-                              onPressed: () =>
-                                  _openReaderScreen(context, lastOpenedBook!),
-                              style: TextButton.styleFrom(
-                                backgroundColor: Colors.blue,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 8),
-                              ),
-                              child: const Text("Continue Reading"),
                             ),
                           ],
                         ),

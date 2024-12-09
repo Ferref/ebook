@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'home/home_screen.dart';
-import 'book/book_import_screen.dart';
 import 'book/my_books_screen.dart';
+import 'book/book_import_screen.dart';
 import 'market/market_screen.dart';
 import 'settings/settings_screen.dart';
 import '../../models/books.dart';
@@ -16,7 +16,7 @@ class ScreensWrapper extends StatefulWidget {
 class _ScreensWrapperState extends State<ScreensWrapper> {
   int _currentIndex = 0;
   Book? _lastOpenedBook;
-  List<Book> _ownedBooks = [];
+  final List<Book> _ownedBooks = [];
   Color _primaryColor = Colors.blue;
   Color _secondaryColor = Colors.yellow;
   Color _backgroundColor = Colors.black;
@@ -29,6 +29,13 @@ class _ScreensWrapperState extends State<ScreensWrapper> {
     });
   }
 
+  void _addBook(Book book) {
+    setState(() {
+      _ownedBooks.add(book);
+      _lastOpenedBook = book;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,12 +43,6 @@ class _ScreensWrapperState extends State<ScreensWrapper> {
         HomeScreen(
           lastOpenedBook: _lastOpenedBook,
           ownedBooks: _ownedBooks,
-          onBookAdded: (book) {
-            setState(() {
-              _ownedBooks.add(book);
-              _lastOpenedBook = book;
-            });
-          },
         ),
         const MarketScreen(),
         MyBooksScreen(
@@ -54,10 +55,7 @@ class _ScreensWrapperState extends State<ScreensWrapper> {
         ),
         BookImportScreen(
           onBookImported: (book) {
-            setState(() {
-              _ownedBooks.add(book);
-              _lastOpenedBook = book;
-            });
+            _addBook(book);
           },
         ),
         SettingsScreen(

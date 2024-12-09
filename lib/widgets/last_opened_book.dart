@@ -23,20 +23,33 @@ class LastOpenedBook extends StatelessWidget {
       children: [
         Text(
           "Last Opened Book",
-          style: Theme.of(context).textTheme.headlineSmall,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black,
+          ),
         ),
         const SizedBox(height: 10),
         lastOpenedBook == null
-            ? const Text(
+            ? Text(
                 "No book has been opened recently.",
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.grey.shade400
+                      : Colors.grey.shade700,
+                ),
               )
             : GestureDetector(
                 onTap: () => _openReaderScreen(context, lastOpenedBook!),
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    color: Colors.grey.shade200,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.grey.shade800
+                        : Colors.grey.shade200,
                   ),
                   padding: const EdgeInsets.all(12),
                   child: Row(
@@ -75,18 +88,6 @@ class LastOpenedBook extends StatelessWidget {
                               style: Theme.of(context).textTheme.bodySmall,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 16),
-                            TextButton(
-                              onPressed: () =>
-                                  _openReaderScreen(context, lastOpenedBook!),
-                              style: TextButton.styleFrom(
-                                backgroundColor: Colors.blue,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 8),
-                              ),
-                              child: const Text("Continue Reading"),
                             ),
                           ],
                         ),
