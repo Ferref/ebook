@@ -22,6 +22,200 @@ void registerPlugins([final Registrar? pluginRegistrar]) {
   registrar.registerMessageHandler();
 }
 
+dart_plugin_registrant.dart
+//
+// Generated file. Do not edit.
+// This file is generated from template in file `flutter_tools/lib/src/flutter_plugins.dart`.
+//
+
+// @dart = 3.5
+
+import 'dart:io'; // flutter_ignore: dart_io_import.
+import 'package:file_picker/file_picker.dart';
+import 'package:path_provider_android/path_provider_android.dart';
+import 'package:url_launcher_android/url_launcher_android.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:path_provider_foundation/path_provider_foundation.dart';
+import 'package:url_launcher_ios/url_launcher_ios.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:path_provider_linux/path_provider_linux.dart';
+import 'package:url_launcher_linux/url_launcher_linux.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:path_provider_foundation/path_provider_foundation.dart';
+import 'package:url_launcher_macos/url_launcher_macos.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:path_provider_windows/path_provider_windows.dart';
+import 'package:url_launcher_windows/url_launcher_windows.dart';
+
+@pragma('vm:entry-point')
+class _PluginRegistrant {
+
+  @pragma('vm:entry-point')
+  static void register() {
+    if (Platform.isAndroid) {
+      try {
+        FilePickerIO.registerWith();
+      } catch (err) {
+        print(
+          '`file_picker` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        PathProviderAndroid.registerWith();
+      } catch (err) {
+        print(
+          '`path_provider_android` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        UrlLauncherAndroid.registerWith();
+      } catch (err) {
+        print(
+          '`url_launcher_android` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+    } else if (Platform.isIOS) {
+      try {
+        FilePickerIO.registerWith();
+      } catch (err) {
+        print(
+          '`file_picker` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        PathProviderFoundation.registerWith();
+      } catch (err) {
+        print(
+          '`path_provider_foundation` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        UrlLauncherIOS.registerWith();
+      } catch (err) {
+        print(
+          '`url_launcher_ios` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+    } else if (Platform.isLinux) {
+      try {
+        DeviceInfoPlusLinuxPlugin.registerWith();
+      } catch (err) {
+        print(
+          '`device_info_plus` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        FilePickerLinux.registerWith();
+      } catch (err) {
+        print(
+          '`file_picker` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        PathProviderLinux.registerWith();
+      } catch (err) {
+        print(
+          '`path_provider_linux` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        UrlLauncherLinux.registerWith();
+      } catch (err) {
+        print(
+          '`url_launcher_linux` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+    } else if (Platform.isMacOS) {
+      try {
+        FilePickerMacOS.registerWith();
+      } catch (err) {
+        print(
+          '`file_picker` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        PathProviderFoundation.registerWith();
+      } catch (err) {
+        print(
+          '`path_provider_foundation` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        UrlLauncherMacOS.registerWith();
+      } catch (err) {
+        print(
+          '`url_launcher_macos` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+    } else if (Platform.isWindows) {
+      try {
+        DeviceInfoPlusWindowsPlugin.registerWith();
+      } catch (err) {
+        print(
+          '`device_info_plus` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        FilePickerWindows.registerWith();
+      } catch (err) {
+        print(
+          '`file_picker` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        PathProviderWindows.registerWith();
+      } catch (err) {
+        print(
+          '`path_provider_windows` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+      try {
+        UrlLauncherWindows.registerWith();
+      } catch (err) {
+        print(
+          '`url_launcher_windows` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+    }
+  }
+}
+
 app.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -41,10 +235,6 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    _startDelayTimer();
-  }
-
-  void _startDelayTimer() {
     Timer(const Duration(seconds: 3), () {
       setState(() {
         _isLoading = false;
@@ -56,19 +246,33 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Ebook Reader',
+      title: 'DuckReader',
       theme: ebookTheme,
       home: _isLoading ? _buildLoadingScreen() : const ScreensWrapper(),
     );
   }
 
   Widget _buildLoadingScreen() {
-    return Center(
-      child: Image.asset(
-        'assets/images/walkingduck.gif',
-        fit: BoxFit.contain,
-        width: MediaQuery.of(context).size.width * 0.25,
-        height: MediaQuery.of(context).size.height * 0.25,
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              'assets/images/readingduck.png',
+              width: 120,
+              height: 120,
+            ),
+            const SizedBox(height: 20),
+            const CircularProgressIndicator(color: Colors.purple),
+            const SizedBox(height: 10),
+            const Text(
+              'Loading DuckReader...',
+              style: TextStyle(fontSize: 16, color: Colors.purple),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -107,10 +311,6 @@ class OpenLibraryService {
 }
 
 books.dart
-import 'dart:convert';
-import 'dart:io';
-import 'package:http/http.dart' as http;
-
 class Book {
   final String title;
   final String author;
@@ -132,236 +332,89 @@ class Book {
     this.categories = const [],
   });
 
-  // Open Library API válasz feldolgozása
   factory Book.fromJson(Map<String, dynamic> json) {
     return Book(
       title: json['title'] ?? 'Unknown Title',
-      author: json['author_name'] != null
-          ? (json['author_name'] is List
-              ? (json['author_name'] as List).join(', ')
-              : json['author_name'].toString())
-          : 'Unknown Author',
-      isbn: json['isbn'] != null
-          ? (json['isbn'] is List ? json['isbn'][0] : json['isbn'].toString())
-          : 'N/A',
+      author: json['author_name']?.join(', ') ?? 'Unknown Author',
+      isbn: json['isbn']?.first ?? 'N/A',
       coverUrl: json['cover_i'] != null
           ? 'https://covers.openlibrary.org/b/id/${json['cover_i']}-L.jpg'
           : 'https://placehold.co/400',
-      description: json['description'] is String
-          ? json['description'] as String
-          : 'No description available.',
-      pageCount:
-          json['number_of_pages'] is int ? json['number_of_pages'] : null,
-      publishDate: json['publish_date'] is String ? json['publish_date'] : null,
-      categories: json['subject'] != null
-          ? (json['subject'] is List
-              ? List<String>.from(json['subject'])
-              : [json['subject'].toString()])
-          : [],
+      description: json['description'] ?? 'No description available.',
+      pageCount: json['number_of_pages'] as int?,
+      publishDate: json['publish_date'],
+      categories: json['subject']?.cast<String>() ?? [],
     );
-  }
-
-  // Könyv létrehozása fájl alapján
-  static Future<Book> fromFile(String filePath) async {
-    print('Importing book from file: $filePath');
-
-    final fileType = filePath.split('.').last.toLowerCase();
-    final fileName = filePath.split('/').last;
-
-    String title = 'Unknown Title';
-    String author = 'Unknown Author';
-
-    // Fájlnév elemzése
-    if (fileName.contains('-')) {
-      final parts = fileName.replaceAll('.$fileType', '').split('-');
-      if (parts.length >= 2) {
-        author = parts[0].trim();
-        title = parts[1].trim();
-      }
-    } else {
-      title = fileName.replaceAll('.$fileType', '').trim();
-    }
-
-    print('Extracted from file name: Author: $author, Title: $title');
-
-    // Ellenőrzés: fájl tartalmának metaadatok feldolgozása
-    final extractedMetadata = await _extractMetadataFromFile(filePath);
-    if (extractedMetadata != null) {
-      author = extractedMetadata['author'] ?? author;
-      title = extractedMetadata['title'] ?? title;
-      print(
-          'Extracted metadata from file content: Title: ${extractedMetadata['title']}, Author: ${extractedMetadata['author']}');
-    } else {
-      print('No metadata extracted from file content.');
-    }
-
-    return Book(
-      title: title,
-      author: author,
-      isbn: 'N/A',
-      coverUrl: 'https://placehold.co/400', // Default cover image
-      description: 'Imported from local file.',
-      pageCount: null,
-      publishDate: null,
-      categories: [],
-    );
-  }
-
-  // Fájl tartalmának metaadatok kinyerése
-  static Future<Map<String, String>?> _extractMetadataFromFile(
-      String filePath) async {
-    try {
-      final file = File(filePath);
-      final content = await file.readAsString();
-
-      // Egyszerű logika: metaadatokat keresünk
-      final lines = content.split('\n');
-      final titleLine = lines.firstWhere(
-        (line) => line.toLowerCase().contains('title:'),
-        orElse: () => '',
-      );
-      final authorLine = lines.firstWhere(
-        (line) => line.toLowerCase().contains('author:'),
-        orElse: () => '',
-      );
-
-      // Ha metaadatok léteznek, térjünk vissza velük
-      final title = titleLine.replaceFirst('Title:', '').trim();
-      final author = authorLine.replaceFirst('Author:', '').trim();
-
-      if (title.isNotEmpty || author.isNotEmpty) {
-        return {'title': title, 'author': author};
-      }
-    } catch (e) {
-      print('Failed to extract metadata from file: $e');
-    }
-    return null;
-  }
-
-  // Open Library API fallback
-  static Future<Book?> _fetchBookMetadata(String title) async {
-    final url = Uri.parse('https://openlibrary.org/search.json?q=$title');
-    final response = await http.get(url);
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      final docs = data['docs'] as List?;
-      if (docs != null && docs.isNotEmpty) {
-        return Book.fromJson(docs.first);
-      } else {
-        print('No matching books found in Open Library API response.');
-      }
-    } else {
-      print('Failed to fetch book metadata: ${response.statusCode}');
-    }
-    return null;
   }
 }
 
 screens_wrapper.dart
 import 'package:flutter/material.dart';
-import 'package:ebook/screens/home/home_screen.dart';
-import 'package:ebook/screens/market/market_screen.dart';
-import 'package:ebook/screens/book/book_import_screen.dart';
-import 'package:ebook/screens/book/my_books_screen.dart';
-import 'package:ebook/models/books.dart';
+import 'home/home_screen.dart';
+import 'book/book_import_screen.dart';
+import 'book/my_books_screen.dart';
+import 'market/market_screen.dart';
+import '../../models/books.dart';
 
 class ScreensWrapper extends StatefulWidget {
   const ScreensWrapper({super.key});
 
   @override
-  _ScreensWrapperState createState() => _ScreensWrapperState();
+  State<ScreensWrapper> createState() => _ScreensWrapperState();
 }
 
 class _ScreensWrapperState extends State<ScreensWrapper> {
   int _currentIndex = 0;
-
   Book? _lastOpenedBook;
   List<Book> _ownedBooks = [];
-
-  late final List<Widget> _pages;
-
-  @override
-  void initState() {
-    super.initState();
-    _lastOpenedBook = Book(
-      title: "Example Book",
-      author: "Author Name",
-      isbn: "123456789",
-      coverUrl: "https://placehold.co/400",
-      description: "This is a description of the last opened book.",
-      pageCount: 200,
-      publishDate: "2023",
-      categories: ["Fiction", "Drama"],
-    );
-    _pages = [
-      HomeScreen(
-        lastOpenedBook: _lastOpenedBook,
-        ownedBooks: _ownedBooks,
-        onBookAdded: _addBookToLibrary,
-      ),
-      const MarketScreen(),
-      MyBooksScreen(
-        ownedBooks: _ownedBooks,
-        onBookTap: (book) => setState(() => _lastOpenedBook = book),
-      ),
-      BookImportScreen(
-        onBookImported: _addBookToLibrary,
-      ),
-    ];
-  }
-
-  void _addBookToLibrary(Book book) {
-    setState(() {
-      _ownedBooks.add(book);
-      _lastOpenedBook = book;
-    });
-  }
-
-  void _navigateToPage(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
-    Navigator.pop(context); // Close the drawer after navigation
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_currentIndex],
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(color: Colors.blue),
-              child: Text(
-                'DuckReader Menu',
-                style: TextStyle(color: Colors.white, fontSize: 24),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.home),
-              title: const Text('Home'),
-              onTap: () => _navigateToPage(0),
-            ),
-            ListTile(
-              leading: const Icon(Icons.store),
-              title: const Text('Market'),
-              onTap: () => _navigateToPage(1),
-            ),
-            ListTile(
-              leading: const Icon(Icons.book),
-              title: const Text('My Books'),
-              onTap: () => _navigateToPage(2),
-            ),
-            ListTile(
-              leading: const Icon(Icons.import_contacts),
-              title: const Text('Import Books'),
-              onTap: () => _navigateToPage(3),
-            ),
-          ],
+      body: [
+        HomeScreen(
+          lastOpenedBook: _lastOpenedBook,
+          ownedBooks: _ownedBooks,
+          onBookAdded: (book) {
+            setState(() {
+              _ownedBooks.add(book);
+              _lastOpenedBook = book;
+            });
+          },
         ),
+        const MarketScreen(),
+        MyBooksScreen(
+          ownedBooks: _ownedBooks,
+          onBookTap: (book) {
+            setState(() {
+              _lastOpenedBook = book;
+            });
+          },
+        ),
+        BookImportScreen(
+          onBookImported: (book) {
+            setState(() {
+              _ownedBooks.add(book);
+              _lastOpenedBook = book;
+            });
+          },
+        ),
+      ][_currentIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        selectedItemColor: Colors.purple,
+        unselectedItemColor: Colors.grey,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Market'),
+          BottomNavigationBarItem(icon: Icon(Icons.book), label: 'My Books'),
+          BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Import'),
+        ],
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
       ),
     );
   }
@@ -492,8 +545,7 @@ class BookImportScreen extends StatefulWidget {
 }
 
 class _BookImportScreenState extends State<BookImportScreen> {
-  final Set<String> _importedFileNames = {};
-  List<Book> importedBooks = [];
+  final Set<String> _importedFilePaths = {};
   Book? lastImportedBook;
 
   Future<void> _importBook() async {
@@ -505,30 +557,28 @@ class _BookImportScreenState extends State<BookImportScreen> {
 
       if (result != null) {
         final platformFile = result.files.single;
-        String fileName = platformFile.name;
+        String? filePath = platformFile.path;
 
-        if (_importedFileNames.contains(fileName)) {
+        if (filePath == null) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content:
-                    Text('This file has already been imported: $fileName')),
+            const SnackBar(content: Text('File path is invalid.')),
           );
           return;
         }
 
-        _importedFileNames.add(fileName);
-
-        Uint8List? fileBytes;
-        if (kIsWeb) {
-          fileBytes = platformFile.bytes;
-        } else {
-          fileBytes = await File(platformFile.path!).readAsBytes();
+        if (_importedFilePaths.contains(filePath)) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text(
+                    'This file has already been imported: ${platformFile.name}')),
+          );
+          return;
         }
 
-        final book = await _extractMetadata(fileName, fileBytes);
+        _importedFilePaths.add(filePath);
+        final book = await _extractMetadata(filePath);
 
         setState(() {
-          importedBooks.add(book);
           lastImportedBook = book;
         });
 
@@ -537,8 +587,6 @@ class _BookImportScreenState extends State<BookImportScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Book imported: ${book.title}')),
         );
-
-        _showBookDetails(book);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('No file selected.')),
@@ -551,61 +599,28 @@ class _BookImportScreenState extends State<BookImportScreen> {
     }
   }
 
-  Future<Book> _extractMetadata(
-      String filePathOrName, Uint8List? fileBytes) async {
-    String title = 'Unknown Title';
+  Future<Book> _extractMetadata(String filePath) async {
+    String fileName = filePath.split('/').last;
+    String title = fileName.split('.').first;
     String author = 'Unknown Author';
-    String coverUrl = 'https://placehold.co/400';
 
-    if (filePathOrName.contains('-')) {
-      final parts = filePathOrName.split('-');
+    if (fileName.contains('-')) {
+      final parts = fileName.split('-');
       if (parts.length >= 2) {
         author = parts[0].trim();
         title = parts[1].split('.').first.trim();
       }
-    } else {
-      title = filePathOrName.split('.').first.trim();
     }
 
     return Book(
       title: title,
       author: author,
       isbn: 'N/A',
-      coverUrl: coverUrl,
+      coverUrl: filePath,
       description: 'Imported from local file.',
       pageCount: null,
       publishDate: null,
       categories: [],
-    );
-  }
-
-  void _showBookDetails(Book book) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(book.title),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Author: ${book.author}'),
-              const SizedBox(height: 10),
-              Image.network(
-                book.coverUrl,
-                height: 150,
-                errorBuilder: (context, error, stackTrace) =>
-                    const Icon(Icons.broken_image, size: 50),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
-            ),
-          ],
-        );
-      },
     );
   }
 
@@ -616,9 +631,8 @@ class _BookImportScreenState extends State<BookImportScreen> {
         title: const Text('Import Books'),
       ),
       body: Center(
-        // Középre igazítja az egész tartalmat
         child: Column(
-          mainAxisSize: MainAxisSize.min, // Csak a szükséges helyet foglalja el
+          mainAxisSize: MainAxisSize.min,
           children: [
             ElevatedButton(
               onPressed: _importBook,
@@ -706,9 +720,9 @@ class ReaderScreen extends StatefulWidget {
 }
 
 class _ReaderScreenState extends State<ReaderScreen> {
-  EpubBookRef? _epubBookRef; // Make this nullable
-  bool _isLoading = true; // Add loading state
-  String? _errorMessage; // Add error message state
+  EpubBookRef? _epubBookRef;
+  bool _isLoading = true;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -718,7 +732,6 @@ class _ReaderScreenState extends State<ReaderScreen> {
 
   Future<void> _loadEpubBook() async {
     try {
-      // Simulate loading EPUB content
       final bytes = File(widget.book.coverUrl).readAsBytesSync();
       final epubBookRef = await EpubReader.openBook(bytes);
       setState(() {
@@ -760,7 +773,6 @@ class _ReaderScreenState extends State<ReaderScreen> {
       );
     }
 
-    // When book is loaded successfully
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.book.title),
@@ -778,11 +790,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
 home_screen.dart
 import 'package:flutter/material.dart';
 import '../../models/books.dart';
-import '../book/my_books_screen.dart';
-import '../book/book_import_screen.dart';
-import '../market/market_screen.dart';
-import '../book/reader_screen.dart';
-import 'package:ebook/widgets/last_opened_book.dart';
+import '../../widgets/last_opened_book.dart';
 
 class HomeScreen extends StatelessWidget {
   final Book? lastOpenedBook;
@@ -796,115 +804,21 @@ class HomeScreen extends StatelessWidget {
     required this.onBookAdded,
   });
 
-  void _openReaderScreen(BuildContext context, Book book) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ReaderScreen(book: book),
-      ),
-    );
-  }
-
-  void _openMyBooksScreen(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => MyBooksScreen(
-          ownedBooks: ownedBooks,
-          onBookTap: (book) => _openReaderScreen(context, book), // Corrected
-        ),
-      ),
-    );
-  }
-
-  void _openImportBooksScreen(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => BookImportScreen(
-          onBookImported: onBookAdded,
-        ),
-      ),
-    );
-  }
-
-  void _openMarketScreen(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const MarketScreen(),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("DuckReader - Home"),
-      ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(color: Colors.blue),
-              child: Text(
-                'DuckReader Menu',
-                style: TextStyle(color: Colors.white, fontSize: 24),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.home),
-              title: const Text('Home'),
-              onTap: () => Navigator.pop(context), // Close drawer
-            ),
-            ListTile(
-              leading: const Icon(Icons.store),
-              title: const Text('Market'),
-              onTap: () {
-                Navigator.pop(context); // Close drawer
-                _openMarketScreen(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.book),
-              title: const Text('My Books'),
-              onTap: () {
-                Navigator.pop(context); // Close drawer
-                _openMyBooksScreen(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.import_contacts),
-              title: const Text('Import Books'),
-              onTap: () {
-                Navigator.pop(context); // Close drawer
-                _openImportBooksScreen(context);
-              },
-            ),
-          ],
-        ),
+        title: const Text('DuckReader Home'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Display the last opened book
             LastOpenedBook(lastOpenedBook: lastOpenedBook),
             const SizedBox(height: 20),
-
-            // Button to navigate to My Books
             ElevatedButton(
-              onPressed: () => _openMyBooksScreen(context),
-              child: const Text("Go to My Books"),
-            ),
-
-            // Button to navigate to Import Books
-            ElevatedButton(
-              onPressed: () => _openImportBooksScreen(context),
-              child: const Text("Import a Book"),
+              onPressed: () {},
+              child: const Text('Import a Book'),
             ),
           ],
         ),
@@ -1032,79 +946,32 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 final ThemeData ebookTheme = ThemeData(
-  scaffoldBackgroundColor: Colors.white,
-  bottomNavigationBarTheme: BottomNavigationBarThemeData(
-    backgroundColor: Colors.white,
-    elevation: 0,
-    unselectedItemColor: Colors.grey[200],
-    selectedItemColor: Colors.purple,
-  ),
-  primaryColor: Colors.white,
+  scaffoldBackgroundColor: Colors.grey[50],
   appBarTheme: AppBarTheme(
+    backgroundColor: Colors.deepPurple,
     elevation: 0,
-    backgroundColor: Colors.black,
-    iconTheme: const IconThemeData(color: Colors.white),
-    titleTextStyle: GoogleFonts.aboreto(
-      letterSpacing: 1.5,
+    titleTextStyle: GoogleFonts.lobster(
       fontSize: 24,
       color: Colors.white,
-      fontWeight: FontWeight.bold,
     ),
-  ),
-  progressIndicatorTheme: ProgressIndicatorThemeData(
-    color: Colors.purple,
-    linearTrackColor: Colors.purple[200],
   ),
   textTheme: TextTheme(
-    titleSmall: GoogleFonts.aboreto(
-      fontSize: 12,
-      color: Colors.white,
-    ),
-    titleMedium: GoogleFonts.aboreto(
-      fontSize: 16,
-      color: Colors.white,
-    ),
-    titleLarge: GoogleFonts.aboreto(
-      fontSize: 20,
-      color: Colors.black,
-    ),
-    labelSmall: GoogleFonts.gildaDisplay(
-      fontSize: 20,
-    ),
-    labelMedium: GoogleFonts.gildaDisplay(
-      fontSize: 26,
-    ),
-    labelLarge: GoogleFonts.gildaDisplay(
-      fontSize: 32,
-    ),
-    bodySmall: GoogleFonts.gildaDisplay(
-      fontSize: 20,
-    ),
-    bodyMedium: GoogleFonts.gildaDisplay(
-      fontSize: 26,
-    ),
-    bodyLarge: GoogleFonts.gildaDisplay(
-      fontSize: 32,
-    ),
-    headlineLarge: GoogleFonts.gildaDisplay(
-      fontSize: 30,
-      color: Colors.white,
-      fontWeight: FontWeight.w500,
-    ),
-    headlineMedium: GoogleFonts.gildaDisplay(
-      fontSize: 30,
-      color: Colors.white,
-      fontWeight: FontWeight.w500,
-    ),
-    headlineSmall: GoogleFonts.gildaDisplay(
-      fontSize: 30,
-      color: Colors.white,
-      fontWeight: FontWeight.w500,
+    bodyMedium: GoogleFonts.openSans(fontSize: 16, color: Colors.grey[800]),
+    headlineMedium: GoogleFonts.poppins(
+      fontSize: 24,
+      fontWeight: FontWeight.bold,
+      color: Colors.deepPurple,
     ),
   ),
-  iconTheme: const IconThemeData(color: Colors.purple),
   buttonTheme: const ButtonThemeData(
-    buttonColor: Colors.purple,
+    buttonColor: Colors.deepPurple,
+  ),
+  elevatedButtonTheme: ElevatedButtonThemeData(
+    style: ElevatedButton.styleFrom(
+      backgroundColor: Colors.deepPurple,
+      foregroundColor: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+    ),
   ),
 );
 
@@ -1315,7 +1182,7 @@ class LastOpenedBook extends StatelessWidget {
                             const SizedBox(height: 8),
                             Text(
                               "By ${lastOpenedBook!.author}",
-                              style: Theme.of(context).textTheme.bodyMedium,
+                              style: Theme.of(context).textTheme.bodySmall,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
