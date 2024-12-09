@@ -18,6 +18,7 @@ dependencies:
   file_picker: ^8.1.4
   epub_view: ^3.2.0
   epubx: ^4.0.0
+  flutter_colorpicker: ^1.0.3
 
 dev_dependencies:
   flutter_test:

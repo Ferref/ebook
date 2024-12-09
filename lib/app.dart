@@ -1,6 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:ebook/themes/app_theme.dart';
 import 'package:ebook/screens/screens_wrapper.dart';
+import 'package:ebook/themes/app_theme.dart';
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -11,23 +12,11 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   bool _isLoading = true;
-  ThemeMode _themeMode = ThemeMode.system; // Default to system theme
-
-  void toggleThemeMode() {
-    setState(() {
-      _themeMode =
-          _themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
-    });
-  }
 
   @override
   void initState() {
     super.initState();
-    _startDelayTimer();
-  }
-
-  void _startDelayTimer() {
-    Future.delayed(const Duration(seconds: 3), () {
+    Timer(const Duration(seconds: 3), () {
       setState(() {
         _isLoading = false;
       });
@@ -39,18 +28,16 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'DuckReader',
-      theme: ebookTheme, // Light theme
-      darkTheme: ebookDarkTheme, // Dark theme
-      themeMode: _themeMode, // Toggle between light and dark themes
-      home: _isLoading
-          ? _buildLoadingScreen()
-          : ScreensWrapper(onThemeToggle: toggleThemeMode),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.dark,
+      home: _isLoading ? _buildLoadingScreen() : const ScreensWrapper(),
     );
   }
 
   Widget _buildLoadingScreen() {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.black,
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -61,11 +48,11 @@ class _MyAppState extends State<MyApp> {
               height: 120,
             ),
             const SizedBox(height: 20),
-            const CircularProgressIndicator(color: Colors.purple),
+            const CircularProgressIndicator(color: Colors.yellow),
             const SizedBox(height: 10),
             const Text(
               'Loading DuckReader...',
-              style: TextStyle(fontSize: 16, color: Colors.purple),
+              style: TextStyle(fontSize: 16, color: Colors.yellow),
             ),
           ],
         ),
