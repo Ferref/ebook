@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../../models/books.dart';
 
 class BookImportScreen extends StatefulWidget {
@@ -13,6 +14,17 @@ class BookImportScreen extends StatefulWidget {
 
 class _BookImportScreenState extends State<BookImportScreen> {
   final Set<String> _importedFilePaths = {};
+
+  Future<void> _requestPermissions() async {
+    PermissionStatus status = await Permission.storage.request();
+    if (status.isGranted) {
+      _importBook();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Storage permission denied')),
+      );
+    }
+  }
 
   Future<void> _importBook() async {
     try {
@@ -36,7 +48,7 @@ class _BookImportScreenState extends State<BookImportScreen> {
           title: result.files.single.name.split('.').first,
           author: 'Unknown',
           isbn: '',
-          coverUrl: 'https://placehold.co/100x150',
+          coverUrl: '',
         );
 
         widget.onBookImported(book);
@@ -57,7 +69,7 @@ class _BookImportScreenState extends State<BookImportScreen> {
       appBar: AppBar(title: const Text('Import Books')),
       body: Center(
         child: ElevatedButton(
-          onPressed: _importBook,
+          onPressed: _requestPermissions,
           child: const Text('Import Book'),
         ),
       ),
