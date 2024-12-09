@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import '../../models/books.dart';
 import '../../screens/book/reader_screen.dart';
@@ -11,7 +12,7 @@ class LastOpenedBook extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ReaderScreen(book: book),
+        builder: (context) => ReaderScreen(book: book, fileBytes: Uint8List(0)),
       ),
     );
   }

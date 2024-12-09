@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../models/books.dart';
@@ -34,7 +33,7 @@ class _BookImportScreenState extends State<BookImportScreen> {
 
         _importedFilePaths.add(filePath);
         final book = Book(
-          title: result.files.single.name,
+          title: result.files.single.name.split('.').first,
           author: 'Unknown',
           isbn: '',
           coverUrl: 'https://placehold.co/100x150',

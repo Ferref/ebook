@@ -1,12 +1,18 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:epubx/epubx.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/books.dart';
 
 class ReaderScreen extends StatefulWidget {
   final Book book;
+  final Uint8List fileBytes;
 
-  const ReaderScreen({super.key, required this.book});
+  const ReaderScreen({
+    super.key,
+    required this.book,
+    required this.fileBytes,
+  });
 
   @override
   _ReaderScreenState createState() => _ReaderScreenState();
@@ -16,6 +22,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
   EpubBookRef? _epubBookRef;
   bool _isLoading = true;
   String? _errorMessage;
+  int _lastLocation = 0;
 
   @override
   void initState() {
@@ -25,18 +32,36 @@ class _ReaderScreenState extends State<ReaderScreen> {
 
   Future<void> _loadEpubBook() async {
     try {
-      final bytes = File(widget.book.coverUrl).readAsBytesSync();
-      final epubBookRef = await EpubReader.openBook(bytes);
+      final epubBookRef = await EpubReader.openBook(widget.fileBytes);
+      final prefs = await SharedPreferences.getInstance();
+      final lastLocation =
+          prefs.getInt('last_position_${widget.book.title}') ?? 0;
+
       setState(() {
         _epubBookRef = epubBookRef;
+        _lastLocation = lastLocation;
         _isLoading = false;
       });
+
+      _navigateToLastPosition();
     } catch (e) {
       setState(() {
         _errorMessage = "Failed to load the book: $e";
         _isLoading = false;
       });
     }
+  }
+
+  Future<void> _saveCurrentPosition(int location) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setInt('last_position_${widget.book.title}', location);
+    setState(() {
+      _lastLocation = location;
+    });
+  }
+
+  void _navigateToLastPosition() {
+    if (_lastLocation > 0 && _epubBookRef != null) {}
   }
 
   @override

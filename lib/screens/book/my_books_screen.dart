@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import '../../models/books.dart';
 import './reader_screen.dart';
@@ -12,13 +14,24 @@ class MyBooksScreen extends StatelessWidget {
     required this.onBookTap,
   });
 
-  void _openReaderScreen(BuildContext context, Book book) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ReaderScreen(book: book),
-      ),
-    );
+  void _openReaderScreen(BuildContext context, Book book) async {
+    try {
+      final file = File(book.coverUrl);
+      final Uint8List fileBytes = await file.readAsBytes();
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ReaderScreen(
+            book: book,
+            fileBytes: fileBytes,
+          ),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load the book: $e')),
+      );
+    }
   }
 
   @override
