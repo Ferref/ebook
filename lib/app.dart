@@ -12,6 +12,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   bool _isLoading = true;
+  bool _isDarkMode = true;
 
   @override
   void initState() {
@@ -23,6 +24,12 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  void _toggleDarkMode(bool isDarkMode) {
+    setState(() {
+      _isDarkMode = isDarkMode;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -30,8 +37,13 @@ class _MyAppState extends State<MyApp> {
       title: 'DuckReader',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.dark,
-      home: _isLoading ? _buildLoadingScreen() : const ScreensWrapper(),
+      themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      home: _isLoading
+          ? _buildLoadingScreen()
+          : ScreensWrapper(
+              onDarkModeToggle: _toggleDarkMode,
+              isDarkMode: _isDarkMode,
+            ),
     );
   }
 

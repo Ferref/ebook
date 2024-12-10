@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 class SettingsScreen extends StatefulWidget {
-  final Function(Color primary, Color secondary, Color background)
-      onColorChange;
+  final Function(Color primary, Color secondary, bool isDarkMode) onColorChange;
 
   const SettingsScreen({super.key, required this.onColorChange});
 
@@ -14,7 +13,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   Color _primaryColor = Colors.blue;
   Color _secondaryColor = Colors.yellow;
-  Color _backgroundColor = Colors.black;
+  bool _isDarkMode = true;
 
   void _pickColor(Color currentColor, Function(Color) onColorChanged) {
     showDialog(
@@ -68,7 +67,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         widget.onColorChange(
                           _primaryColor,
                           _secondaryColor,
-                          _backgroundColor,
+                          _isDarkMode,
                         );
                       });
                     },
@@ -99,7 +98,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         widget.onColorChange(
                           _primaryColor,
                           _secondaryColor,
-                          _backgroundColor,
+                          _isDarkMode,
                         );
                       });
                     },
@@ -120,30 +119,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text("Background Color"),
-                GestureDetector(
-                  onTap: () => _pickColor(
-                    _backgroundColor,
-                    (color) {
-                      setState(() {
-                        _backgroundColor = color;
-                        widget.onColorChange(
-                          _primaryColor,
-                          _secondaryColor,
-                          _backgroundColor,
-                        );
-                      });
-                    },
-                  ),
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: _backgroundColor,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.grey),
-                    ),
-                  ),
+                const Text("Dark Mode"),
+                Switch(
+                  value: _isDarkMode,
+                  onChanged: (value) {
+                    setState(() {
+                      _isDarkMode = value;
+                      widget.onColorChange(
+                        _primaryColor,
+                        _secondaryColor,
+                        _isDarkMode,
+                      );
+                    });
+                  },
                 ),
               ],
             ),

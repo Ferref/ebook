@@ -12,7 +12,7 @@ class LastOpenedBook extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ReaderScreen(book: book, fileBytes: Uint8List(0)),
+        builder: (context) => ReaderScreen(book: book),
       ),
     );
   }

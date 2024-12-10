@@ -1,104 +1,116 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:epubx/epubx.dart';
+import 'package:epub_view/epub_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:io';
 import '../../models/books.dart';
 
 class ReaderScreen extends StatefulWidget {
   final Book book;
-  final Uint8List fileBytes;
 
-  const ReaderScreen({
-    super.key,
-    required this.book,
-    required this.fileBytes,
-  });
+  const ReaderScreen({super.key, required this.book});
 
   @override
+  // ignore: library_private_types_in_public_api
   _ReaderScreenState createState() => _ReaderScreenState();
 }
 
 class _ReaderScreenState extends State<ReaderScreen> {
-  EpubBookRef? _epubBookRef;
-  bool _isLoading = true;
-  String? _errorMessage;
-  int _lastLocation = 0;
+  late EpubController _epubController;
+  String? _lastPosition;
 
   @override
   void initState() {
     super.initState();
-    _loadEpubBook();
+    _loadLastPosition();
+    _initializeEpubController();
   }
 
-  Future<void> _loadEpubBook() async {
-    try {
-      final epubBookRef = await EpubReader.openBook(widget.fileBytes);
-      final prefs = await SharedPreferences.getInstance();
-      final lastLocation =
-          prefs.getInt('last_position_${widget.book.title}') ?? 0;
+  Future<void> _initializeEpubController() async {
+    Uint8List? fileBytes;
 
-      setState(() {
-        _epubBookRef = epubBookRef;
-        _lastLocation = lastLocation;
-        _isLoading = false;
-      });
+    if (widget.book.filePath != null) {
+      final file = File(widget.book.filePath!);
+      fileBytes = await file.readAsBytes();
+    } else if (widget.book.fileBytes != null) {
+      fileBytes = widget.book.fileBytes;
+    }
 
-      _navigateToLastPosition();
-    } catch (e) {
+    if (fileBytes != null) {
       setState(() {
-        _errorMessage = "Failed to load the book: $e";
-        _isLoading = false;
+        _epubController = EpubController(
+          document: EpubDocument.openData(fileBytes!),
+          epubCfi: _lastPosition,
+        );
       });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to load the book.')),
+      );
     }
   }
 
-  Future<void> _saveCurrentPosition(int location) async {
+  Future<void> _loadLastPosition() async {
     final prefs = await SharedPreferences.getInstance();
-    prefs.setInt('last_position_${widget.book.title}', location);
     setState(() {
-      _lastLocation = location;
+      _lastPosition = prefs.getString('last_position_${widget.book.title}');
     });
   }
 
-  void _navigateToLastPosition() {
-    if (_lastLocation > 0 && _epubBookRef != null) {}
+  Future<void> _saveCurrentPosition() async {
+    final cfi = _epubController.generateEpubCfi();
+    if (cfi != null) {
+      final prefs = await SharedPreferences.getInstance();
+      prefs.setString('last_position_${widget.book.title}', cfi);
+    }
+  }
+
+  @override
+  void dispose() {
+    _saveCurrentPosition();
+    _epubController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(widget.book.title),
-        ),
-        body: const Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
-
-    if (_errorMessage != null) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(widget.book.title),
-        ),
+    if (!mounted || _epubController == null) {
+      return const Scaffold(
         body: Center(
-          child: Text(
-            _errorMessage!,
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
+          child: CircularProgressIndicator(),
         ),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.book.title),
+        title: EpubViewActualChapter(
+          controller: _epubController,
+          builder: (chapterValue) => Text(
+            chapterValue?.chapter?.Title?.replaceAll('\n', '').trim() ?? '',
+            textAlign: TextAlign.start,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.bookmark),
+            onPressed: () async {
+              await _saveCurrentPosition();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Bookmark saved!')),
+              );
+            },
+          ),
+        ],
       ),
-      body: Center(
-        child: Text(
-          "Epub Book Loaded Successfully!",
-          style: Theme.of(context).textTheme.headlineMedium,
+      drawer: Drawer(
+        child: EpubViewTableOfContents(controller: _epubController),
+      ),
+      body: EpubView(
+        controller: _epubController,
+        builders: EpubViewBuilders<DefaultBuilderOptions>(
+          options: const DefaultBuilderOptions(),
+          chapterDividerBuilder: (_) => const Divider(),
         ),
       ),
     );

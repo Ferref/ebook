@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import '../../models/books.dart';
 import './reader_screen.dart';
@@ -9,27 +8,22 @@ class MyBooksScreen extends StatelessWidget {
   final void Function(Book book) onBookTap;
 
   const MyBooksScreen({
-    super.key,
+    Key? key,
     required this.ownedBooks,
     required this.onBookTap,
-  });
+  }) : super(key: key);
 
   void _openReaderScreen(BuildContext context, Book book) async {
-    try {
-      final file = File(book.coverUrl);
-      final Uint8List fileBytes = await file.readAsBytes();
+    if (book.filePath != null) {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ReaderScreen(
-            book: book,
-            fileBytes: fileBytes,
-          ),
+          builder: (context) => ReaderScreen(book: book),
         ),
       );
-    } catch (e) {
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to load the book: $e')),
+        const SnackBar(content: Text('File path is missing for this book.')),
       );
     }
   }

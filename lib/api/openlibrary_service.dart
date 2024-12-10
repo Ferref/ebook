@@ -5,7 +5,6 @@ import '../models/books.dart';
 class OpenLibraryService {
   final String baseUrl = 'https://openlibrary.org';
 
-  // Fetch books based on a search query
   Future<List<Book>> searchBooks(String query) async {
     final url = Uri.parse('$baseUrl/search.json?q=$query&limit=5');
     final response = await http.get(url);

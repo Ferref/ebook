@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 class Book {
   final String title;
   final String author;
@@ -7,6 +9,8 @@ class Book {
   final int? pageCount;
   final String? publishDate;
   final List<String> categories;
+  final Uint8List? fileBytes;
+  final String? filePath;
 
   Book({
     required this.title,
@@ -17,9 +21,10 @@ class Book {
     this.pageCount,
     this.publishDate,
     this.categories = const [],
+    this.fileBytes,
+    this.filePath,
   });
 
-  // Factory method to create a Book object from JSON
   factory Book.fromJson(Map<String, dynamic> json) {
     return Book(
       title: json['title'] ?? 'Unknown Title',
@@ -41,12 +46,8 @@ class Book {
               ?.map((subject) => subject.toString())
               .toList() ??
           [],
+      fileBytes: null,
+      filePath: null,
     );
-  }
-
-  // For debugging: print book details
-  @override
-  String toString() {
-    return 'Book(title: $title, author: $author, isbn: $isbn)';
   }
 }

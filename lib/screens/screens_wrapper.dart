@@ -7,7 +7,14 @@ import 'settings/settings_screen.dart';
 import '../../models/books.dart';
 
 class ScreensWrapper extends StatefulWidget {
-  const ScreensWrapper({super.key});
+  final Function(bool isDarkMode) onDarkModeToggle;
+  final bool isDarkMode;
+
+  const ScreensWrapper({
+    super.key,
+    required this.onDarkModeToggle,
+    required this.isDarkMode,
+  });
 
   @override
   State<ScreensWrapper> createState() => _ScreensWrapperState();
@@ -19,13 +26,12 @@ class _ScreensWrapperState extends State<ScreensWrapper> {
   final List<Book> _ownedBooks = [];
   Color _primaryColor = Colors.blue;
   Color _secondaryColor = Colors.yellow;
-  Color _backgroundColor = Colors.black;
 
-  void _updateColors(Color primary, Color secondary, Color background) {
+  void _updateColors(Color primary, Color secondary, bool isDarkMode) {
     setState(() {
       _primaryColor = primary;
       _secondaryColor = secondary;
-      _backgroundColor = background;
+      widget.onDarkModeToggle(isDarkMode);
     });
   }
 
@@ -38,7 +44,10 @@ class _ScreensWrapperState extends State<ScreensWrapper> {
 
   @override
   Widget build(BuildContext context) {
+    final backgroundColor = widget.isDarkMode ? Colors.black : Colors.white;
+
     return Scaffold(
+      backgroundColor: backgroundColor,
       body: [
         HomeScreen(
           lastOpenedBook: _lastOpenedBook,
@@ -66,7 +75,7 @@ class _ScreensWrapperState extends State<ScreensWrapper> {
         currentIndex: _currentIndex,
         selectedItemColor: _primaryColor,
         unselectedItemColor: _secondaryColor,
-        backgroundColor: _backgroundColor,
+        backgroundColor: backgroundColor,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Market'),
